@@ -1,73 +1,10 @@
 import React from "react";
 import Link from "next/link";
-import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/session";
-import { Sparkles, ArrowRight, ShieldCheck, Target, Award, Quote, Heart } from "lucide-react";
-import { MentorCard } from "@/components/MentorCard";
-
-async function getAuthenticLandingData() {
-  try {
-    const mentors = await db.user.findMany({
-      where: {
-        role: "MENTOR",
-        accountStatus: "ACTIVE",
-      },
-      include: {
-        mentorProfile: true,
-        userSkills: {
-          include: {
-            skill: true,
-          },
-        },
-      },
-      take: 6,
-    });
-
-    const skillsCount = await db.skill.count();
-    const verifiedMentorsCount = await db.mentorProfile.count({
-      where: { verificationStatus: "VERIFIED" },
-    });
-
-    const formattedMentors = mentors.map((m) => {
-      const profile = m.mentorProfile;
-      return {
-        id: m.id,
-        name: m.name,
-        avatar: m.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Mentor",
-        title: profile?.professionalTitle || "Senior Technical Specialist",
-        yearsExp: profile?.yearsExperience || 5,
-        bio: profile?.bio || "Experienced engineer guiding developers through modern software architecture.",
-        rating: profile?.overallRating || 4.9,
-        reviewCount: profile?.reviewCount || 10,
-        isVerified: profile?.verificationStatus === "VERIFIED",
-        skills: m.userSkills.map((us) => ({
-          name: us.skill.name,
-          proficiency: us.proficiency,
-          yearsExp: us.yearsExperience,
-        })),
-        matchScore: 95,
-        matchReasons: [
-          `Teaches ${m.userSkills[0]?.skill.name || "Software Architecture"}`,
-          `Verified ${profile?.yearsExperience || 5}+ yrs industry experience`,
-          `High-rated mentor (${profile?.overallRating || 4.9} ★)`,
-        ],
-      };
-    });
-
-    return {
-      mentors: formattedMentors,
-      skillsCount,
-      verifiedMentorsCount,
-    };
-  } catch (error) {
-    console.error("Error loading authentic data:", error);
-    return { mentors: [], skillsCount: 0, verifiedMentorsCount: 0 };
-  }
-}
+import { Sparkles, ArrowRight, ShieldCheck, Target, Quote, Heart } from "lucide-react";
 
 export default async function HomePage() {
   const session = await getSessionUser();
-  const { mentors, skillsCount, verifiedMentorsCount } = await getAuthenticLandingData();
 
   return (
     <div className="min-h-screen bg-background text-slate-100 flex flex-col justify-between">
@@ -168,60 +105,7 @@ export default async function HomePage() {
                 Sign In to Portal
               </Link>
             </div>
-
-            {/* Authentic Live Platform Statistics */}
-            <div className="pt-8 grid grid-cols-2 sm:grid-cols-3 gap-4 max-w-2xl mx-auto border-t border-emerald-500/10">
-              <div className="p-4 rounded-2xl glass-card border border-emerald-500/15">
-                <span className="block text-2xl font-black text-emerald-400">{verifiedMentorsCount}</span>
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Verified Mentors</span>
-              </div>
-              <div className="p-4 rounded-2xl glass-card border border-emerald-500/15">
-                <span className="block text-2xl font-black text-emerald-400">{skillsCount}</span>
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Skill Taxonomies</span>
-              </div>
-              <div className="p-4 rounded-2xl glass-card border border-emerald-500/15 col-span-2 sm:col-span-1">
-                <span className="block text-2xl font-black text-emerald-400">4.95 ★</span>
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Verified Rating</span>
-              </div>
-            </div>
           </div>
-        </section>
-
-        {/* Authentic Verified Mentors Section (No Fake / Random Data) */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">
-                <Award className="w-4 h-4 text-emerald-400" />
-                Verified Industry Experts
-              </div>
-              <h2 className="text-2xl font-black text-slate-100">
-                Top-Rated Technical Mentors
-              </h2>
-              <p className="text-xs text-slate-400 mt-1">
-                Authentic verified mentors loaded directly from the platform database
-              </p>
-            </div>
-            <Link
-              href="/register"
-              className="text-xs font-bold text-emerald-400 hover:underline flex items-center gap-1"
-            >
-              Get Started to Book
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {mentors.length === 0 ? (
-            <div className="p-8 text-center glass-card rounded-2xl text-xs text-slate-400">
-              No mentors loaded yet. Please run <code className="text-emerald-400">npm run db:seed</code>.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {mentors.map((mentor) => (
-                <MentorCard key={mentor.id} mentor={mentor} />
-              ))}
-            </div>
-          )}
         </section>
 
         {/* Feature Cards Section */}
@@ -260,9 +144,9 @@ export default async function HomePage() {
         </section>
       </div>
 
-      {/* Prominent Footer Attribution (Created by Roopesh) */}
+      {/* Footer Attribution (Created by Roopesh) */}
       <footer className="border-t border-emerald-500/20 bg-dark-bg/90 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="flex items-center justify-center gap-2 text-sm font-extrabold text-slate-200">
             <span>SkillBridge Mentorship Platform</span>
             <span className="text-emerald-400">•</span>
@@ -270,12 +154,6 @@ export default async function HomePage() {
               <Heart className="w-3.5 h-3.5 fill-emerald-400 text-emerald-400" />
               Created by Roopesh
             </span>
-          </div>
-          <p className="text-xs text-slate-400">
-            Built with Next.js 14, TypeScript, Tailwind CSS, Prisma ORM & SQLite.
-          </p>
-          <div className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
-            © {new Date().getFullYear()} SkillBridge • All Rights Reserved
           </div>
         </div>
       </footer>
