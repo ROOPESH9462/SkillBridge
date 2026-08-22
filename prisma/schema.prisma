@@ -1,0 +1,203 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String
+  passwordHash  String
+  role          String   @default("LEARNER") // LEARNER, MENTOR, ADMIN
+  accountStatus String   @default("ACTIVE")  // ACTIVE, SUSPENDED, DEACTIVATED
+  avatar        String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  mentorProfile   MentorProfile?
+  applications    MentorApplication[]
+  userSkills      UserSkill[]
+  availability    MentorAvailability[]
+  mentorSessions  MentorshipSession[]  @relation("MentorSessions")
+  learnerSessions MentorshipSession[]  @relation("LearnerSessions")
+  notifications   Notification[]
+  reviewsGiven    Review[]             @relation("ReviewsGiven")
+  reviewsReceived Review[]             @relation("ReviewsReceived")
+  skillGoals      LearnerSkillGoal[]
+
+  @@index([role])
+  @@index([accountStatus])
+}
+
+model MentorProfile {
+  id                 String    @id @default(uuid())
+  userId             String    @unique
+  professionalTitle  String    // e.g. "Senior Cloud Architect"
+  yearsExperience    Int       @default(1)
+  bio                String
+  githubUrl          String?
+  linkedinUrl        String?
+  portfolioUrl       String?
+  overallRating      Float     @default(5.0)
+  reviewCount        Int       @default(0)
+  verificationStatus String    @default("PENDING") // PENDING, VERIFIED, REJECTED
+  verificationDate   DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([verificationStatus])
+}
+
+model MentorApplication {
+  id                 String    @id @default(uuid())
+  userId             String
+  professionalTitle  String
+  yearsExperience    Int
+  skills             String    // Comma-separated or normalized skill list
+  bio                String
+  portfolioUrl       String?
+  linkedinUrl        String?
+  reasonForMentoring String
+  status             String    @default("PENDING") // PENDING, VERIFIED, REJECTED
+  submittedAt        DateTime  @default(now())
+  reviewedAt         DateTime?
+  updatedAt          DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+model Skill {
+  id          String   @id @default(uuid())
+  name        String   @unique // e.g. "Next.js", "System Design", "Docker"
+  category    String   // e.g. "Software Engineering", "AI & ML", "DevOps"
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userSkills UserSkill[]
+  goals      LearnerSkillGoal[]
+  sessions   MentorshipSession[]
+}
+
+model UserSkill {
+  id              String   @id @default(uuid())
+  userId          String
+  skillId         String
+  role            String   @default("TEACHING")     // TEACHING, LEARNING
+  proficiency     String   @default("INTERMEDIATE") // BEGINNER, INTERMEDIATE, EXPERT
+  yearsExperience Int      @default(1)
+  isVerified      Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId, role])
+}
+
+model LearnerSkillGoal {
+  id          String   @id @default(uuid())
+  userId      String
+  skillId     String
+  targetLevel String   @default("EXPERT") // BEGINNER, INTERMEDIATE, EXPERT
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill      Skill            @relation(fields: [skillId], references: [id], onDelete: Cascade)
+  milestones SkillMilestone[]
+
+  @@unique([userId, skillId])
+}
+
+model SkillMilestone {
+  id          String   @id @default(uuid())
+  goalId      String
+  title       String   // e.g. "React Server Components"
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  goal LearnerSkillGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+}
+
+model MentorAvailability {
+  id        String   @id @default(uuid())
+  mentorId  String
+  dayOfWeek Int      // 0 (Sun) to 6 (Sat)
+  startTime String   // "10:00"
+  endTime   String   // "14:00"
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  mentor User @relation(fields: [mentorId], references: [id], onDelete: Cascade)
+
+  @@index([mentorId, dayOfWeek])
+}
+
+model MentorshipSession {
+  id              String   @id @default(uuid())
+  mentorId        String
+  learnerId       String
+  skillId         String
+  scheduledStart  DateTime
+  scheduledEnd    DateTime
+  durationMinutes Int      @default(45)
+  status          String   @default("REQUESTED") // REQUESTED, CONFIRMED, CANCELLED, COMPLETED, NO_SHOW
+  topic           String   // e.g. "System Architecture Review"
+  notes           String?  // Post-session topics & action items
+  meetingLink     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  mentor  User    @relation("MentorSessions", fields: [mentorId], references: [id])
+  learner User    @relation("LearnerSessions", fields: [learnerId], references: [id])
+  skill   Skill   @relation(fields: [skillId], references: [id])
+  review  Review?
+
+  @@index([mentorId, scheduledStart])
+  @@index([learnerId, scheduledStart])
+  @@index([status])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("BOOKING_REQUEST") // BOOKING_REQUEST, BOOKING_APPROVED, etc.
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+}
+
+model Review {
+  id           String   @id @default(uuid())
+  sessionId    String   @unique
+  authorId     String
+  targetUserId String
+  rating       Int      // 1 to 5
+  comment      String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  session    MentorshipSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  author     User              @relation("ReviewsGiven", fields: [authorId], references: [id])
+  targetUser User              @relation("ReviewsReceived", fields: [targetUserId], references: [id])
+}
