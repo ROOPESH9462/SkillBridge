@@ -1,10 +1,61 @@
 import React from "react";
 import Link from "next/link";
 import { getSessionUser } from "@/lib/session";
-import { Sparkles, ArrowRight, ShieldCheck, Target, Quote, Heart } from "lucide-react";
+import { Sparkles, ArrowRight, ShieldCheck, Target, Quote, Heart, Lock, CalendarCheck, Bell, Star, Cpu, Layers } from "lucide-react";
 
 export default async function HomePage() {
   const session = await getSessionUser();
+
+  const platformModules = [
+    {
+      icon: Lock,
+      title: "Authentication & Role-Based Access (RBAC)",
+      tag: "Security Module",
+      description:
+        "Secure HTTP-only JWT sessions, bcrypt password hashing, and role authorization for Learner, Mentor, and Admin portals.",
+      highlights: ["HMAC SHA-256 JWT Cookies", "Learner / Mentor / Admin RBAC", "Server-Side Authorization Checks"],
+    },
+    {
+      icon: Target,
+      title: "Structured Skill Goals & Milestone Roadmaps",
+      tag: "Learning Module",
+      description:
+        "Goal-oriented milestone progress tracking for technical skills (Next.js, System Design, Python, AWS, Docker).",
+      highlights: ["Dynamic Progress % Calculation", "Interactive Milestone Roadmaps", "Automatic Goal Completion"],
+    },
+    {
+      icon: Cpu,
+      title: "Explainable 6-Factor Recommendation Engine",
+      tag: "Intelligence Module",
+      description:
+        "Deterministic rule-based algorithm matching learners with mentors using explainable multi-factor scoring (45% - 99%).",
+      highlights: ["50% Skill Match Taxonomy", "15% Proficiency Gap Depth", "Interactive Audit Breakdown Modal"],
+    },
+    {
+      icon: CalendarCheck,
+      title: "Transactional Anti-Double-Booking Engine",
+      tag: "Scheduling Module",
+      description:
+        "Dynamic 45-minute bookable slot generation with database transactions verifying interval overlap conditions.",
+      highlights: ["Prisma Database Transactions", "Interval Overlap Rejection", "Recurring Weekly Availability"],
+    },
+    {
+      icon: Bell,
+      title: "Real-Time In-App Notification Center",
+      tag: "Notification Module",
+      description:
+        "Live header notification bell displaying unread counter badges, notification drawer, and 1-click read status management.",
+      highlights: ["Animated Unread Badges", "Event-Driven Status Sync", "Session & Verification Alerts"],
+    },
+    {
+      icon: Star,
+      title: "Verified Session Reviews & Rating System",
+      tag: "Reputation Module",
+      description:
+        "Review submissions require strict ownership verification and session completion status. Recalculates ratings transactionally.",
+      highlights: ["Learner Session Verification", "Transactional Rating Recalculation", "Verified Public Profile Badges"],
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background text-slate-100 flex flex-col justify-between">
@@ -108,38 +159,54 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Feature Cards Section */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-6 rounded-3xl glass-card border border-emerald-500/20 space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                <Target className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-slate-100">Structured Milestone Roadmaps</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Track exact progress via interactive milestone checkable tasks. Progress updates dynamically based on completed milestone counts.
-              </p>
+        {/* Platform Modules Showcase Section */}
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-wider border border-emerald-500/20">
+              <Layers className="w-3.5 h-3.5 text-emerald-400" />
+              Core Platform Architecture
             </div>
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-100">
+              Integrated Technical Modules
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400">
+              Explore the six core architectural modules powering the SkillBridge mentorship ecosystem.
+            </p>
+          </div>
 
-            <div className="p-6 rounded-3xl glass-card border border-emerald-500/20 space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                <Sparkles className="w-5 h-5 fill-emerald-400" />
-              </div>
-              <h3 className="text-base font-bold text-slate-100">6-Factor Recommendation Engine</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Deterministic matching engine combining skill taxonomy (50%), proficiency gap (15%), experience (10%), rating (10%), availability (10%), and history (5%).
-              </p>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {platformModules.map((mod, idx) => {
+              const IconComp = mod.icon;
+              return (
+                <div
+                  key={idx}
+                  className="p-6 rounded-3xl glass-card border border-emerald-500/20 hover:border-emerald-500/40 transition-all space-y-4 glow-green-sm flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                        <IconComp className="w-6 h-6" />
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-[10px] uppercase">
+                        {mod.tag}
+                      </span>
+                    </div>
 
-            <div className="p-6 rounded-3xl glass-card border border-emerald-500/20 space-y-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <h3 className="text-base font-bold text-slate-100">Zero Double Bookings</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Booking reservations execute inside Prisma database transactions checking schedule overlap interval conditions.
-              </p>
-            </div>
+                    <h3 className="text-base font-extrabold text-slate-100">{mod.title}</h3>
+                    <p className="text-xs text-slate-300 leading-relaxed">{mod.description}</p>
+                  </div>
+
+                  <div className="pt-3 border-t border-emerald-500/10 space-y-1.5">
+                    {mod.highlights.map((item, i) => (
+                      <div key={i} className="flex items-center gap-2 text-[11px] font-semibold text-slate-400">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
       </div>
