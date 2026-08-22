@@ -1,4 +1,5 @@
 import { UserRepository } from "@/repositories/user.repository";
+import { MentorRepository } from "@/repositories/mentor.repository";
 import { hashPassword, comparePassword } from "@/lib/password";
 import { createSessionCookie, destroySessionCookie } from "@/lib/session";
 import { registerSchema, loginSchema } from "@/lib/validation";
@@ -32,6 +33,18 @@ export class AuthService {
       passwordHash: hashedPassword,
       role: assignedRole,
     });
+
+    // If registering as a Mentor, automatically create a Pending Mentor Application for Admin Verification Queue
+    if (assignedRole === "MENTOR") {
+      await MentorRepository.createApplication({
+        userId: user.id,
+        professionalTitle: "Technical Specialist & Mentor",
+        yearsExperience: 3,
+        skills: "Next.js, System Design, TypeScript, React",
+        bio: `Verified mentor profile for ${user.name}.`,
+        reasonForMentoring: "Registered directly as a Mentor on SkillBridge.",
+      });
+    }
 
     const payload = {
       userId: user.id,
