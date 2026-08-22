@@ -10,12 +10,11 @@ import {
   Linkedin,
   Globe,
   Calendar,
-  ShieldCheck,
   BookOpen,
   ArrowLeft,
   MessageSquare,
-  Sparkles,
 } from "lucide-react";
+import { BookingModal } from "./BookingModal";
 
 interface MentorDetailProps {
   mentor: {
@@ -115,18 +114,9 @@ export function MentorProfileView({ mentor }: MentorDetailProps) {
             </div>
           </div>
 
-          {/* Booking Button (Informative for Phase 5) */}
+          {/* Booking Button Modal */}
           <div className="w-full md:w-auto text-center md:text-right space-y-2">
-            <button
-              disabled
-              className="w-full md:w-auto px-8 py-3.5 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-bold text-sm opacity-90 cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              <Calendar className="w-4 h-4 text-emerald-400" />
-              Book Mentorship Session
-            </button>
-            <p className="text-[11px] text-emerald-400/80 font-medium">
-              * Dynamic slot booking activates in Phase 5
-            </p>
+            <BookingModal mentor={mentor} />
           </div>
         </div>
 
