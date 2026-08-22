@@ -2,8 +2,9 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
-import { ShieldCheck, Users, UserCheck, Clock, Calendar, CheckCircle2, XCircle } from "lucide-react";
+import { ShieldCheck, Users, UserCheck, Clock, Calendar } from "lucide-react";
 import Link from "next/link";
+import { AdminApplicationTable } from "@/components/AdminApplicationTable";
 
 export default async function AdminDashboardPage() {
   const session = await getSessionUser();
@@ -35,10 +36,10 @@ export default async function AdminDashboardPage() {
     );
   }
 
-  // Fetch Platform Analytics
+  // Fetch Analytics
   const totalUsers = await db.user.count();
   const totalMentors = await db.user.count({ where: { role: "MENTOR" } });
-  const pendingApplications = await db.mentorApplication.count({ where: { status: "PENDING" } });
+  const pendingApplicationsCount = await db.mentorApplication.count({ where: { status: "PENDING" } });
   const totalSessions = await db.mentorshipSession.count();
   const completedSessions = await db.mentorshipSession.count({ where: { status: "COMPLETED" } });
 
@@ -50,7 +51,7 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
-      {/* Admin Banner */}
+      {/* Admin Header */}
       <div className="p-6 rounded-3xl glass-card border border-emerald-500/20 glow-green-sm flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
@@ -93,7 +94,7 @@ export default async function AdminDashboardPage() {
             <span className="text-xs font-bold uppercase">Pending Verification</span>
             <Clock className="w-4 h-4 text-amber-400" />
           </div>
-          <span className="text-2xl font-extrabold text-amber-400">{pendingApplications}</span>
+          <span className="text-2xl font-extrabold text-amber-400">{pendingApplicationsCount}</span>
         </div>
 
         <div className="p-5 rounded-2xl glass-card border border-emerald-500/20">
@@ -106,6 +107,9 @@ export default async function AdminDashboardPage() {
           </span>
         </div>
       </div>
+
+      {/* Interactive Mentor Verification Applications Table */}
+      <AdminApplicationTable />
 
       {/* Recent Users Table */}
       <div className="p-6 rounded-3xl glass-card border border-emerald-500/20 space-y-4">
@@ -143,11 +147,13 @@ export default async function AdminDashboardPage() {
                   </td>
                   <td className="py-3 px-4">
                     {u.mentorProfile ? (
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${
-                        u.mentorProfile.verificationStatus === "VERIFIED"
-                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
-                          : "bg-amber-500/10 border-amber-500/30 text-amber-400"
-                      }`}>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${
+                          u.mentorProfile.verificationStatus === "VERIFIED"
+                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                            : "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                        }`}
+                      >
                         {u.mentorProfile.verificationStatus}
                       </span>
                     ) : (
