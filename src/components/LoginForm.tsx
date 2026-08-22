@@ -57,6 +57,20 @@ export function LoginForm() {
         </p>
       </div>
 
+      {/* Portal Switcher Tabs */}
+      <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-dark-bg/80 border border-emerald-500/20 text-xs font-bold">
+        <div className="py-2 text-center rounded-lg bg-emerald-500 text-slate-950 font-extrabold shadow-sm">
+          Learner / Mentor Portal
+        </div>
+        <Link
+          href="/admin/login"
+          className="py-2 text-center rounded-lg text-slate-400 hover:text-emerald-400 transition-colors flex items-center justify-center gap-1"
+        >
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+          Admin Portal
+        </Link>
+      </div>
+
       {error && (
         <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-start gap-2">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />

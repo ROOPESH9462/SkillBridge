@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { UserPlus, Mail, Lock, User, AlertCircle, ArrowRight, CheckCircle2, ShieldCheck, Sparkles } from "lucide-react";
+import { UserPlus, Mail, Lock, User, AlertCircle, ArrowRight, CheckCircle2, ShieldCheck, Sparkles, KeyRound } from "lucide-react";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -11,7 +11,8 @@ export function RegisterForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [accountType, setAccountType] = useState<"LEARNER" | "MENTOR">("LEARNER");
+  const [accountType, setAccountType] = useState<"LEARNER" | "MENTOR" | "ADMIN">("LEARNER");
+  const [adminSecret, setAdminSecret] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -21,6 +22,11 @@ export function RegisterForm() {
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
+      return;
+    }
+
+    if (accountType === "ADMIN" && !adminSecret.trim()) {
+      setError("Admin Secret Key is required to create an Admin account.");
       return;
     }
 
@@ -35,6 +41,7 @@ export function RegisterForm() {
           email,
           password,
           role: accountType,
+          adminSecret: accountType === "ADMIN" ? adminSecret : undefined,
         }),
       });
 
@@ -64,7 +71,7 @@ export function RegisterForm() {
           Enterprise Portal Gateway
         </div>
         <h1 className="text-2xl font-black text-slate-100">Create New Account</h1>
-        <p className="text-xs text-slate-400">Join SkillBridge to track skill goals or apply as a verified mentor.</p>
+        <p className="text-xs text-slate-400">Register as a Learner, Mentor applicant, or Platform Administrator.</p>
       </div>
 
       {error && (
@@ -116,39 +123,77 @@ export function RegisterForm() {
           <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
             Register Role *
           </label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
               onClick={() => setAccountType("LEARNER")}
-              className={`p-3 rounded-xl border text-xs font-bold transition-all text-left flex items-center justify-between ${
+              className={`p-2.5 rounded-xl border text-[11px] font-bold transition-all text-center flex flex-col items-center justify-center gap-1 ${
                 accountType === "LEARNER"
                   ? "border-emerald-500 bg-emerald-500/10 text-emerald-400 shadow-sm"
-                  : "border-emerald-500/20 bg-dark-bg/40 text-slate-400"
+                  : "border-emerald-500/20 bg-dark-bg/40 text-slate-400 hover:bg-emerald-500/5"
               }`}
             >
-              <span>Learner Account</span>
-              {accountType === "LEARNER" && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+              <span>Learner</span>
+              {accountType === "LEARNER" && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
             </button>
 
             <button
               type="button"
               onClick={() => setAccountType("MENTOR")}
-              className={`p-3 rounded-xl border text-xs font-bold transition-all text-left flex items-center justify-between ${
+              className={`p-2.5 rounded-xl border text-[11px] font-bold transition-all text-center flex flex-col items-center justify-center gap-1 ${
                 accountType === "MENTOR"
                   ? "border-emerald-500 bg-emerald-500/10 text-emerald-400 shadow-sm"
-                  : "border-emerald-500/20 bg-dark-bg/40 text-slate-400"
+                  : "border-emerald-500/20 bg-dark-bg/40 text-slate-400 hover:bg-emerald-500/5"
               }`}
             >
-              <span>Apply as Mentor</span>
-              {accountType === "MENTOR" && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+              <span>Mentor</span>
+              {accountType === "MENTOR" && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setAccountType("ADMIN")}
+              className={`p-2.5 rounded-xl border text-[11px] font-bold transition-all text-center flex flex-col items-center justify-center gap-1 ${
+                accountType === "ADMIN"
+                  ? "border-emerald-500 bg-emerald-500/10 text-emerald-400 shadow-sm"
+                  : "border-emerald-500/20 bg-dark-bg/40 text-slate-400 hover:bg-emerald-500/5"
+              }`}
+            >
+              <span>Admin</span>
+              {accountType === "ADMIN" && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
             </button>
           </div>
           {accountType === "MENTOR" && (
             <p className="text-[11px] text-emerald-400/80 mt-1.5 font-medium">
-              * Mentor accounts require admin review & transactional verification before appearing publicly.
+              * Mentor accounts require admin review & verification before appearing publicly.
+            </p>
+          )}
+          {accountType === "ADMIN" && (
+            <p className="text-[11px] text-emerald-400/80 mt-1.5 font-medium">
+              * Admin registration requires secret key validation (default key: <code className="text-emerald-300 font-bold">admin123</code>).
             </p>
           )}
         </div>
+
+        {/* Admin Secret Key Input */}
+        {accountType === "ADMIN" && (
+          <div>
+            <label className="block text-xs font-bold text-emerald-400 mb-1.5 uppercase tracking-wider">
+              Admin Secret Key *
+            </label>
+            <div className="relative">
+              <KeyRound className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-emerald-400" />
+              <input
+                type="password"
+                required
+                value={adminSecret}
+                onChange={(e) => setAdminSecret(e.target.value)}
+                placeholder="e.g. admin123"
+                className="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-emerald-500/40 bg-emerald-500/5 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-400 transition-colors font-mono"
+              />
+            </div>
+          </div>
+        )}
 
         {/* Password */}
         <div>
@@ -191,7 +236,7 @@ export function RegisterForm() {
           disabled={loading}
           className="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 disabled:opacity-50"
         >
-          {loading ? "Creating Account..." : "Create Account & Enter Portal"}
+          {loading ? "Creating Account..." : `Create ${accountType} Account & Enter Portal`}
           <ArrowRight className="w-4 h-4" />
         </button>
       </form>

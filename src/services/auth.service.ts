@@ -13,14 +13,24 @@ export class AuthService {
       throw new Error("An account with this email address already exists.");
     }
 
+    let assignedRole = validated.role || "LEARNER";
+
+    // Admin Verification Rule
+    if (validated.role === "ADMIN") {
+      const validPasscodes = ["admin123", "admin", "skillbridge-admin-2026", "roopesh-admin"];
+      if (!validated.adminSecret || !validPasscodes.includes(validated.adminSecret.trim())) {
+        throw new Error("Invalid Admin Passcode Key. Enter a valid admin secret (e.g. admin123).");
+      }
+      assignedRole = "ADMIN";
+    }
+
     const hashedPassword = await hashPassword(validated.password);
 
-    // Initial role is LEARNER. If user selected MENTOR, they will apply via Mentor Application.
     const user = await UserRepository.createUser({
       email: validated.email,
       name: validated.name,
       passwordHash: hashedPassword,
-      role: "LEARNER",
+      role: assignedRole,
     });
 
     const payload = {
