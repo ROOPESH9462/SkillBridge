@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { Clock, Calendar, CheckCircle2, Star } from "lucide-react";
 import { SessionCard } from "@/components/SessionCard";
 import { MentorAvailabilityManager } from "@/components/MentorAvailabilityManager";
+import { RoleNavSwitcher } from "@/components/RoleNavSwitcher";
 
 export default async function MentorDashboardPage() {
   const session = await getSessionUser();
@@ -70,7 +71,10 @@ export default async function MentorDashboardPage() {
   }));
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      {/* Role Navigation & Portal Switcher Bar */}
+      <RoleNavSwitcher currentRole={session.role} />
+
       {/* Mentor Header */}
       <div className="p-6 rounded-3xl glass-card border border-emerald-500/20 glow-green-sm flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -84,7 +88,7 @@ export default async function MentorDashboardPage() {
               <h1 className="text-2xl font-extrabold text-slate-100">{session.name}</h1>
               <span className="px-2.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-extrabold text-[10px] uppercase flex items-center gap-1">
                 <CheckCircle2 className="w-3 h-3" />
-                Verified Mentor
+                Mentor Workspace
               </span>
             </div>
             <p className="text-xs font-semibold text-emerald-400 mt-0.5">

@@ -4,6 +4,7 @@ import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import { ShieldCheck, Users, UserCheck, Clock, Calendar } from "lucide-react";
 import { AdminApplicationTable } from "@/components/AdminApplicationTable";
+import { RoleNavSwitcher } from "@/components/RoleNavSwitcher";
 
 export default async function AdminDashboardPage() {
   const session = await getSessionUser();
@@ -33,7 +34,10 @@ export default async function AdminDashboardPage() {
   });
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      {/* Role Navigation & Portal Switcher Bar */}
+      <RoleNavSwitcher currentRole={session.role} />
+
       {/* Admin Header */}
       <div className="p-6 rounded-3xl glass-card border border-emerald-500/20 glow-green-sm flex items-center justify-between">
         <div className="flex items-center gap-4">

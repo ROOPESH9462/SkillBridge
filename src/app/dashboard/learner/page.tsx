@@ -8,6 +8,7 @@ import { GoalList } from "@/components/GoalList";
 import { MentorApplicationForm } from "@/components/MentorApplicationForm";
 import { RecommendationService } from "@/services/recommendation.service";
 import { RecommendedMentorCard } from "@/components/RecommendedMentorCard";
+import { RoleNavSwitcher } from "@/components/RoleNavSwitcher";
 
 export default async function LearnerDashboardPage() {
   const session = await getSessionUser();
@@ -40,7 +41,10 @@ export default async function LearnerDashboardPage() {
   const recommendedMentors = await RecommendationService.getRecommendedMentors(session.userId);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      {/* Role Navigation & Portal Switcher Bar */}
+      <RoleNavSwitcher currentRole={session.role} />
+
       {/* Dashboard Banner */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-6 rounded-3xl glass-card border border-emerald-500/20 glow-green-sm">
         <div className="flex items-center gap-4">
@@ -53,7 +57,7 @@ export default async function LearnerDashboardPage() {
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-extrabold text-slate-100">{session.name}</h1>
               <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-extrabold text-[10px] uppercase">
-                Learner Dashboard
+                Learner Workspace
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-1">

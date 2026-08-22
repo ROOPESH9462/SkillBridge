@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ShieldCheck, LogOut, ChevronDown, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, LogOut, ChevronDown, CheckCircle2, UserCheck, BookOpen, Search, UserPlus } from "lucide-react";
 import { NotificationBell } from "./NotificationBell";
 
 interface UserMenuProps {
@@ -75,12 +75,6 @@ export function UserMenu({ initialUser }: UserMenuProps) {
     );
   }
 
-  const getDashboardPath = () => {
-    if (user.role === "ADMIN") return "/dashboard/admin";
-    if (user.role === "MENTOR") return "/dashboard/mentor";
-    return "/dashboard/learner";
-  };
-
   return (
     <div className="flex items-center gap-2">
       {/* In-App Notification Bell */}
@@ -107,7 +101,7 @@ export function UserMenu({ initialUser }: UserMenuProps) {
         </button>
 
         {open && (
-          <div className="absolute right-0 mt-2 w-56 rounded-2xl glass-card border border-emerald-500/30 shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2">
+          <div className="absolute right-0 mt-2 w-60 rounded-2xl glass-card border border-emerald-500/30 shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2">
             <div className="p-3 border-b border-emerald-500/10">
               <p className="text-xs font-bold text-slate-200">{user.name}</p>
               <p className="text-[11px] text-slate-400 truncate">{user.email}</p>
@@ -117,19 +111,63 @@ export function UserMenu({ initialUser }: UserMenuProps) {
               </div>
             </div>
 
-            <div className="py-1">
+            {/* Role Interlinks */}
+            <div className="py-1 space-y-0.5">
+              {/* Learner Dashboard Link */}
               <Link
-                href={getDashboardPath()}
+                href="/dashboard/learner"
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-xl text-slate-200 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors"
               >
-                <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                {user.role === "ADMIN"
-                  ? "Admin Dashboard"
-                  : user.role === "MENTOR"
-                  ? "Mentor Dashboard"
-                  : "Learner Dashboard"}
+                <BookOpen className="w-4 h-4 text-emerald-500" />
+                Learner Workspace
               </Link>
+
+              {/* Mentor Dashboard Link (For Mentors & Admins) */}
+              {(user.role === "MENTOR" || user.role === "ADMIN") && (
+                <Link
+                  href="/dashboard/mentor"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-xl text-slate-200 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors"
+                >
+                  <UserCheck className="w-4 h-4 text-emerald-500" />
+                  Mentor Workspace
+                </Link>
+              )}
+
+              {/* Admin Command Link (For Admins) */}
+              {user.role === "ADMIN" && (
+                <Link
+                  href="/dashboard/admin"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-xl text-slate-200 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors"
+                >
+                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                  Admin Command Center
+                </Link>
+              )}
+
+              {/* Browse Directory Link */}
+              <Link
+                href="/mentors"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-xl text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors"
+              >
+                <Search className="w-4 h-4 text-emerald-500" />
+                Explore Mentors Directory
+              </Link>
+
+              {/* Apply as Mentor Link (for Learners) */}
+              {user.role === "LEARNER" && (
+                <Link
+                  href="/register"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-xl text-slate-300 hover:bg-emerald-500/10 hover:text-emerald-400 transition-colors"
+                >
+                  <UserPlus className="w-4 h-4 text-emerald-500" />
+                  Apply to become a Mentor
+                </Link>
+              )}
             </div>
 
             <div className="pt-1 border-t border-emerald-500/10">
