@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Clock, CheckCircle2, XCircle, CheckSquare, AlertTriangle } from "lucide-react";
+import { Clock, CheckCircle2, XCircle, CheckSquare, AlertTriangle, Star } from "lucide-react";
+import { ReviewModal } from "./ReviewModal";
 
 interface SessionCardProps {
   session: {
@@ -17,6 +18,7 @@ interface SessionCardProps {
     skill: { name: string };
     mentor: { id: string; name: string; avatar?: string | null; mentorProfile?: { professionalTitle: string } | null };
     learner: { id: string; name: string; avatar?: string | null; email: string };
+    review?: { id: string; rating: number; comment: string } | null;
   };
   currentUserId: string;
   userRole: string;
@@ -47,6 +49,7 @@ export function SessionCard({ session, currentUserId, userRole, onStatusUpdate }
   };
 
   const isMentor = session.mentorId === currentUserId || userRole === "MENTOR" || userRole === "ADMIN";
+  const isLearner = session.learnerId === currentUserId;
 
   return (
     <div className="p-6 rounded-2xl glass-card border border-emerald-500/20 space-y-4 hover:border-emerald-500/40 transition-all">
@@ -73,6 +76,20 @@ export function SessionCard({ session, currentUserId, userRole, onStatusUpdate }
           Duration: {session.durationMinutes} minutes
         </p>
       </div>
+
+      {/* Verified Review display if submitted */}
+      {session.review && (
+        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-1">
+          <div className="flex items-center justify-between text-xs font-bold text-amber-400">
+            <span>Verified Review Submitted</span>
+            <div className="flex items-center gap-1">
+              <Star className="w-3.5 h-3.5 fill-amber-400 stroke-amber-400" />
+              <span>{session.review.rating}.0 / 5.0</span>
+            </div>
+          </div>
+          <p className="text-xs text-slate-300 italic">"{session.review.comment}"</p>
+        </div>
+      )}
 
       {/* Participant info */}
       <div className="flex items-center justify-between pt-2">
@@ -142,6 +159,15 @@ export function SessionCard({ session, currentUserId, userRole, onStatusUpdate }
                 </button>
               )}
             </>
+          )}
+
+          {session.status === "COMPLETED" && isLearner && !session.review && (
+            <ReviewModal
+              sessionId={session.id}
+              mentorName={session.mentor.name}
+              topic={session.topic}
+              onSuccess={onStatusUpdate}
+            />
           )}
         </div>
       </div>

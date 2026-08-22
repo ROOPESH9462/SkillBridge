@@ -29,3 +29,9 @@ export const mentorApplicationSchema = z.object({
   linkedinUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
   reasonForMentoring: z.string().min(10, "Please provide your reason for mentoring"),
 });
+
+export const reviewSchema = z.object({
+  sessionId: z.string().uuid("Invalid session ID"),
+  rating: z.number().int().min(1).max(5),
+  comment: z.string().min(5, "Comment must be at least 5 characters"),
+});
