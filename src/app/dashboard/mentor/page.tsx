@@ -6,6 +6,7 @@ import { Clock, Calendar, CheckCircle2, Star } from "lucide-react";
 import { SessionCard } from "@/components/SessionCard";
 import { MentorAvailabilityManager } from "@/components/MentorAvailabilityManager";
 import { RoleNavSwitcher } from "@/components/RoleNavSwitcher";
+import { MentorVerificationStatusCard } from "@/components/MentorVerificationStatusCard";
 
 export default async function MentorDashboardPage() {
   const session = await getSessionUser();
@@ -75,6 +76,14 @@ export default async function MentorDashboardPage() {
       {/* Role Navigation & Portal Switcher Bar */}
       <RoleNavSwitcher currentRole={session.role} />
 
+      {/* Admin Mentor Verification Status Card */}
+      <MentorVerificationStatusCard
+        verificationStatus={profile?.verificationStatus || "VERIFIED"}
+        verificationDate={profile?.verificationDate}
+        professionalTitle={profile?.professionalTitle}
+        yearsExperience={profile?.yearsExperience}
+      />
+
       {/* Mentor Header */}
       <div className="p-6 rounded-3xl glass-card border border-emerald-500/20 glow-green-sm flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -133,7 +142,7 @@ export default async function MentorDashboardPage() {
             <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
           </div>
           <span className="text-2xl font-extrabold text-slate-100">
-            {profile?.overallRating.toFixed(2) || "5.00"}
+            {profile?.overallRating?.toFixed(2) || "5.00"}
           </span>
         </div>
       </div>
