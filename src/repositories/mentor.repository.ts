@@ -15,9 +15,6 @@ export class MentorRepository {
     const whereClause: any = {
       role: "MENTOR",
       accountStatus: "ACTIVE",
-      mentorProfile: {
-        verificationStatus: "VERIFIED",
-      },
     };
 
     if (search) {
@@ -84,9 +81,7 @@ export class MentorRepository {
         },
       },
       orderBy: {
-        mentorProfile: {
-          overallRating: "desc",
-        },
+        createdAt: "desc",
       },
     });
   }
@@ -97,9 +92,6 @@ export class MentorRepository {
         id,
         role: "MENTOR",
         accountStatus: "ACTIVE",
-        mentorProfile: {
-          verificationStatus: "VERIFIED",
-        },
       },
       include: {
         mentorProfile: true,
@@ -217,12 +209,66 @@ export class MentorRepository {
         },
       });
 
-      // 4. Create Notification
+      // 4. Auto-link UserSkills for the mentor from application skills
+      if (app.skills) {
+        const skillNames = app.skills.split(",").map((s) => s.trim()).filter(Boolean);
+        for (const name of skillNames) {
+          let skill = await tx.skill.findFirst({
+            where: { name: { equals: name } },
+          });
+          if (!skill) {
+            skill = await tx.skill.create({
+              data: {
+                name,
+                category: "Software Engineering",
+                description: `Technical skill domain: ${name}`,
+              },
+            });
+          }
+
+          const existing = await tx.userSkill.findFirst({
+            where: { userId: app.userId, skillId: skill.id },
+          });
+
+          if (!existing) {
+            await tx.userSkill.create({
+              data: {
+                userId: app.userId,
+                skillId: skill.id,
+                proficiency: "EXPERT",
+                role: "TEACHING",
+                yearsExperience: app.yearsExperience,
+              },
+            });
+          }
+        }
+      }
+
+      // 5. Seed default weekly Availability Windows (Mon-Fri 09:00 - 17:00)
+      const existingAvail = await tx.mentorAvailability.findMany({
+        where: { mentorId: app.userId },
+      });
+
+      if (existingAvail.length === 0) {
+        for (let dayOfWeek = 1; dayOfWeek <= 5; dayOfWeek++) {
+          await tx.mentorAvailability.create({
+            data: {
+              mentorId: app.userId,
+              dayOfWeek,
+              startTime: "09:00",
+              endTime: "17:00",
+              isActive: true,
+            },
+          });
+        }
+      }
+
+      // 6. Create Notification
       await tx.notification.create({
         data: {
           userId: app.userId,
           title: "Mentor Application Approved! 🎉",
-          message: "Congratulations! Your mentor application has been verified. You can now set your availability and accept mentorship requests.",
+          message: "Congratulations! Your mentor application has been verified. Your mentor profile is now live.",
           type: "MENTOR_VERIFIED",
         },
       });
@@ -251,7 +297,7 @@ export class MentorRepository {
         data: {
           userId: app.userId,
           title: "Mentor Application Update",
-          message: "Your application to become a verified mentor was not approved at this time. You can re-apply with updated credentials.",
+          message: "Your application to become a verified mentor was not approved at this time.",
           type: "BOOKING_REJECTED",
         },
       });

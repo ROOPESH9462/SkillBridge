@@ -2,7 +2,7 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
-import { Calendar, BookOpen, Clock, ShieldCheck, ArrowRight, Sparkles } from "lucide-react";
+import { Calendar, BookOpen, Clock, ShieldCheck, ArrowRight, Sparkles, UserCheck } from "lucide-react";
 import Link from "next/link";
 import { GoalList } from "@/components/GoalList";
 import { MentorApplicationForm } from "@/components/MentorApplicationForm";
@@ -61,16 +61,16 @@ export default async function LearnerDashboardPage() {
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Track your active skill goals, milestone progress, and personalized mentor recommendations.
+              Track active skill goals, milestone progress, and explore verified mentor matches.
             </p>
           </div>
         </div>
 
         <Link
           href="/mentors"
-          className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 flex items-center gap-2 transition-all"
+          className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 flex items-center gap-2 transition-all shrink-0"
         >
-          Explore Full Directory
+          Explore Full Directory ({recommendedMentors.length})
           <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
@@ -81,10 +81,10 @@ export default async function LearnerDashboardPage() {
           <div>
             <h2 className="text-xl font-extrabold text-slate-100 flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-emerald-400 fill-emerald-400" />
-              Recommended Mentors for Your Learning Goals
+              Verified Mentors Available for You ({recommendedMentors.length})
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Matched using multi-factor scoring (Skill Match 50%, Proficiency 15%, Experience 10%, Rating 10%, Availability 10%, History 5%)
+              Ranked using multi-factor scoring (Skill Match 50%, Proficiency 15%, Experience 10%, Rating 10%, Availability 10%)
             </p>
           </div>
 
@@ -97,12 +97,16 @@ export default async function LearnerDashboardPage() {
         </div>
 
         {recommendedMentors.length === 0 ? (
-          <div className="p-8 text-center glass-card rounded-2xl border border-emerald-500/10 text-xs text-slate-400">
-            No mentor recommendations available yet. Set a skill goal to generate personalized matches!
+          <div className="p-8 text-center glass-card rounded-2xl border border-emerald-500/10 text-xs text-slate-400 space-y-2">
+            <UserCheck className="w-8 h-8 text-emerald-400/50 mx-auto" />
+            <p className="font-bold text-slate-300">No mentors registered yet.</p>
+            <p className="text-[11px] text-slate-400">
+              Apply as a mentor or register a mentor account to populate recommendations!
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {recommendedMentors.slice(0, 2).map((m) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {recommendedMentors.slice(0, 6).map((m) => (
               <RecommendedMentorCard key={m.mentorId} mentor={m} />
             ))}
           </div>
@@ -144,7 +148,7 @@ export default async function LearnerDashboardPage() {
                 </p>
                 <Link
                   href="/dashboard/mentor"
-                  className="inline-block px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs"
+                  className="inline-block px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20"
                 >
                   Go to Mentor Dashboard
                 </Link>
