@@ -89,14 +89,20 @@ async function main() {
 
   const skillMap = new Map<string, string>();
   for (const s of skillsData) {
-    const created = await prisma.skill.create({ data: s });
+    const created = await prisma.skill.upsert({
+      where: { name: s.name },
+      update: {},
+      create: s,
+    });
     skillMap.set(s.name, created.id);
   }
 
-  // 2. Create Admin & Learner Accounts
-  console.log("👤 Creating Admin & Learner users...");
-  const adminUser = await prisma.user.create({
-    data: {
+  // 2. Create Admin, Learner, and Generic Test Mentor Accounts
+  console.log("👤 Creating Admin, Learner, and Test Mentor accounts...");
+  const adminUser = await prisma.user.upsert({
+    where: { email: "admin@skillbridge.dev" },
+    update: {},
+    create: {
       email: "admin@skillbridge.dev",
       name: "Platform Administrator",
       passwordHash: hashedPassword,
@@ -106,14 +112,29 @@ async function main() {
     },
   });
 
-  const learnerUser = await prisma.user.create({
-    data: {
+  const learnerUser = await prisma.user.upsert({
+    where: { email: "learner@skillbridge.dev" },
+    update: {},
+    create: {
       email: "learner@skillbridge.dev",
       name: "Siddharth Verma",
       passwordHash: hashedPassword,
       role: Role.LEARNER,
       accountStatus: AccountStatus.ACTIVE,
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Siddharth",
+    },
+  });
+
+  const testMentorUser = await prisma.user.upsert({
+    where: { email: "mentor@skillbridge.dev" },
+    update: {},
+    create: {
+      email: "mentor@skillbridge.dev",
+      name: "Aarav Mehta",
+      passwordHash: hashedPassword,
+      role: Role.MENTOR,
+      accountStatus: AccountStatus.ACTIVE,
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aarav",
     },
   });
 
@@ -156,11 +177,12 @@ async function main() {
   });
 
   // 3. Create Authentic Fictional Mentors
-  console.log("👨‍🏫 Creating 8 Authentic Fictional Mentors...");
+  console.log("👨‍🏫 Creating Authentic Fictional Mentors...");
   const mentors = [
     {
+      userId: testMentorUser.id,
       name: "Aarav Mehta",
-      email: "aarav.mehta@skillbridge.dev",
+      email: "mentor@skillbridge.dev",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aarav",
       title: "Senior Frontend Architect",
       yearsExp: 8,
@@ -247,156 +269,112 @@ async function main() {
         { name: "Docker", prof: SkillProficiency.EXPERT, yrs: 7 },
       ],
     },
-    {
-      name: "Neha Iyer",
-      email: "neha.iyer@skillbridge.dev",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Neha",
-      title: "Lead Data Infrastructure Engineer",
-      yearsExp: 7,
-      bio: "Data architect helping engineers build robust ETL pipelines, SQL query engines, and scalable analytics data warehouses.",
-      github: "https://github.com/nehaiyer-data",
-      linkedin: "https://linkedin.com/in/nehaiyer-data",
-      rating: 4.86,
-      reviewCount: 22,
-      skills: [
-        { name: "Python", prof: SkillProficiency.EXPERT, yrs: 7 },
-        { name: "PostgreSQL", prof: SkillProficiency.EXPERT, yrs: 7 },
-        { name: "System Design", prof: SkillProficiency.INTERMEDIATE, yrs: 5 },
-      ],
-    },
-    {
-      name: "Arjun Menon",
-      email: "arjun.menon@skillbridge.dev",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Arjun",
-      title: "Senior Cybersecurity Engineer",
-      yearsExp: 8,
-      bio: "Application security lead advising on API threat modeling, OAuth2/OIDC authentication protocols, and secure coding standards.",
-      github: "https://github.com/arjunmenon-sec",
-      linkedin: "https://linkedin.com/in/arjunmenon-sec",
-      rating: 4.94,
-      reviewCount: 36,
-      skills: [
-        { name: "System Design", prof: SkillProficiency.EXPERT, yrs: 8 },
-        { name: "TypeScript", prof: SkillProficiency.INTERMEDIATE, yrs: 4 },
-        { name: "Python", prof: SkillProficiency.EXPERT, yrs: 6 },
-      ],
-    },
-    {
-      name: "Kavya Reddy",
-      email: "kavya.reddy@skillbridge.dev",
-      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kavya",
-      title: "Staff Mobile Architect",
-      yearsExp: 6,
-      bio: "Cross-platform mobile developer creating high-performance React Native apps with native iOS/Android bridge integrations.",
-      github: "https://github.com/kavyareddy-mobile",
-      linkedin: "https://linkedin.com/in/kavyareddy-app",
-      rating: 4.91,
-      reviewCount: 27,
-      skills: [
-        { name: "React Native", prof: SkillProficiency.EXPERT, yrs: 6 },
-        { name: "React", prof: SkillProficiency.EXPERT, yrs: 6 },
-        { name: "TypeScript", prof: SkillProficiency.EXPERT, yrs: 5 },
-      ],
-    },
   ];
 
   for (const m of mentors) {
-    const user = await prisma.user.create({
-      data: {
-        email: m.email,
-        name: m.name,
-        passwordHash: hashedPassword,
-        role: Role.MENTOR,
-        accountStatus: AccountStatus.ACTIVE,
-        avatar: m.avatar,
-      },
-    });
+    let user;
+    if (m.userId) {
+      user = await prisma.user.findUnique({ where: { id: m.userId } });
+    } else {
+      user = await prisma.user.create({
+        data: {
+          email: m.email,
+          name: m.name,
+          passwordHash: hashedPassword,
+          role: Role.MENTOR,
+          accountStatus: AccountStatus.ACTIVE,
+          avatar: m.avatar,
+        },
+      });
+    }
 
-    await prisma.mentorProfile.create({
-      data: {
-        userId: user.id,
-        professionalTitle: m.title,
-        yearsExperience: m.yearsExp,
-        bio: m.bio,
-        githubUrl: m.github,
-        linkedinUrl: m.linkedin,
-        overallRating: m.rating,
-        reviewCount: m.reviewCount,
-        verificationStatus: VerificationStatus.VERIFIED,
-        verificationDate: new Date(),
-      },
-    });
+    if (user) {
+      await prisma.mentorProfile.create({
+        data: {
+          userId: user.id,
+          professionalTitle: m.title,
+          yearsExperience: m.yearsExp,
+          bio: m.bio,
+          githubUrl: m.github,
+          linkedinUrl: m.linkedin,
+          overallRating: m.rating,
+          reviewCount: m.reviewCount,
+          verificationStatus: VerificationStatus.VERIFIED,
+          verificationDate: new Date(),
+        },
+      });
 
-    for (const sk of m.skills) {
-      const sId = skillMap.get(sk.name);
-      if (sId) {
-        await prisma.userSkill.create({
+      for (const sk of m.skills) {
+        const sId = skillMap.get(sk.name);
+        if (sId) {
+          await prisma.userSkill.create({
+            data: {
+              userId: user.id,
+              skillId: sId,
+              role: SkillRole.TEACHING,
+              proficiency: sk.prof,
+              yearsExperience: sk.yrs,
+              isVerified: true,
+            },
+          });
+        }
+      }
+
+      // Weekly Availability Slots (Mon, Wed, Fri)
+      for (const day of [1, 3, 5]) {
+        await prisma.mentorAvailability.create({
           data: {
-            userId: user.id,
-            skillId: sId,
-            role: SkillRole.TEACHING,
-            proficiency: sk.prof,
-            yearsExperience: sk.yrs,
-            isVerified: true,
+            mentorId: user.id,
+            dayOfWeek: day,
+            startTime: "10:00",
+            endTime: "14:00",
+            isActive: true,
+          },
+        });
+      }
+
+      // Sample Completed Session & Verified Review for Aarav Mehta
+      if (m.name === "Aarav Mehta") {
+        const session = await prisma.mentorshipSession.create({
+          data: {
+            mentorId: user.id,
+            learnerId: learnerUser.id,
+            skillId: nextjsId,
+            scheduledStart: new Date(Date.now() - 86400000 * 2), // 2 days ago
+            scheduledEnd: new Date(Date.now() - 86400000 * 2 + 2700000), // +45 mins
+            durationMinutes: 45,
+            status: BookingStatus.COMPLETED,
+            topic: "Next.js App Router Caching & Revalidation Deep Dive",
+            notes: "Covered staled-while-revalidate patterns, Server Actions error boundaries, and ISR revalidation triggers.",
+            meetingLink: "https://meet.skillbridge.dev/session-aarav-siddharth",
+          },
+        });
+
+        await prisma.review.create({
+          data: {
+            sessionId: session.id,
+            authorId: learnerUser.id,
+            targetUserId: user.id,
+            rating: 5,
+            comment: "Aarav provided unmatched clarity on React Server Components caching! The architectural diagram we made together cleared up weeks of confusion.",
+          },
+        });
+
+        // Sample Notification
+        await prisma.notification.create({
+          data: {
+            userId: learnerUser.id,
+            title: "Session Completed & Verified",
+            message: "Your mentorship session with Aarav Mehta has been completed. Leave a review!",
+            type: NotificationType.SESSION_COMPLETED,
+            isRead: true,
           },
         });
       }
     }
-
-    // Weekly Availability Slots (Mon, Wed, Fri)
-    for (const day of [1, 3, 5]) {
-      await prisma.mentorAvailability.create({
-        data: {
-          mentorId: user.id,
-          dayOfWeek: day,
-          startTime: "10:00",
-          endTime: "14:00",
-          isActive: true,
-        },
-      });
-    }
-
-    // Sample Completed Session & Verified Review for Aarav Mehta
-    if (m.name === "Aarav Mehta") {
-      const session = await prisma.mentorshipSession.create({
-        data: {
-          mentorId: user.id,
-          learnerId: learnerUser.id,
-          skillId: nextjsId,
-          scheduledStart: new Date(Date.now() - 86400000 * 2), // 2 days ago
-          scheduledEnd: new Date(Date.now() - 86400000 * 2 + 2700000), // +45 mins
-          durationMinutes: 45,
-          status: BookingStatus.COMPLETED,
-          topic: "Next.js App Router Caching & Revalidation Deep Dive",
-          notes: "Covered staled-while-revalidate patterns, Server Actions error boundaries, and ISR revalidation triggers.",
-          meetingLink: "https://meet.skillbridge.dev/session-aarav-siddharth",
-        },
-      });
-
-      await prisma.review.create({
-        data: {
-          sessionId: session.id,
-          authorId: learnerUser.id,
-          targetUserId: user.id,
-          rating: 5,
-          comment: "Aarav provided unmatched clarity on React Server Components caching! The architectural diagram we made together cleared up weeks of confusion.",
-        },
-      });
-
-      // Sample Notification
-      await prisma.notification.create({
-        data: {
-          userId: learnerUser.id,
-          title: "Session Completed & Verified",
-          message: "Your mentorship session with Aarav Mehta has been completed. Leave a review!",
-          type: NotificationType.SESSION_COMPLETED,
-          isRead: true,
-        },
-      });
-    }
   }
 
-  console.log("✅ Seed database populated successfully!");
+  console.log("✅ Idempotent seed database populated successfully!");
 }
 
 main()

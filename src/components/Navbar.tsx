@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { Sparkles, Search, UserCheck, ShieldCheck, BookOpen } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
+import { UserMenu } from "./UserMenu";
 
 export function Navbar() {
   return (
@@ -38,21 +39,21 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           <nav className="hidden lg:flex items-center gap-1 text-sm font-medium">
             <Link
-              href="#explore"
+              href="/#explore"
               className="px-3 py-2 rounded-lg hover:text-emerald-400 hover:bg-emerald-500/5 transition-colors flex items-center gap-1.5"
             >
               <UserCheck className="w-4 h-4 text-emerald-500" />
               Mentors
             </Link>
             <Link
-              href="#skills"
+              href="/#skills"
               className="px-3 py-2 rounded-lg hover:text-emerald-400 hover:bg-emerald-500/5 transition-colors flex items-center gap-1.5"
             >
               <BookOpen className="w-4 h-4 text-emerald-500" />
               Skill Goals
             </Link>
             <Link
-              href="#dashboard"
+              href="/dashboard"
               className="px-3 py-2 rounded-lg hover:text-emerald-400 hover:bg-emerald-500/5 transition-colors flex items-center gap-1.5"
             >
               <ShieldCheck className="w-4 h-4 text-emerald-500" />
@@ -65,10 +66,8 @@ export function Navbar() {
           {/* Theme Toggle */}
           <ThemeToggle />
 
-          {/* Auth Button */}
-          <button className="px-4 py-2 text-sm font-semibold rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all">
-            Sign In
-          </button>
+          {/* User Menu / Auth Controls */}
+          <UserMenu />
         </div>
       </div>
     </header>
