@@ -2,8 +2,7 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
-import { UserCheck, Clock, Calendar, CheckCircle2, Star, ShieldCheck, AlertCircle } from "lucide-react";
-import Link from "next/link";
+import { Clock, Calendar, CheckCircle2, Star } from "lucide-react";
 import { SessionCard } from "@/components/SessionCard";
 import { MentorAvailabilityManager } from "@/components/MentorAvailabilityManager";
 
@@ -14,27 +13,9 @@ export default async function MentorDashboardPage() {
     redirect("/login");
   }
 
-  if (session.role !== "MENTOR" && session.role !== "ADMIN") {
-    return (
-      <div className="min-h-[70vh] flex items-center justify-center p-4">
-        <div className="max-w-md p-8 rounded-3xl glass-card border border-rose-500/30 text-center space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
-          <h1 className="text-xl font-bold text-slate-100">403 — Access Restricted</h1>
-          <p className="text-xs text-slate-400">
-            This dashboard is reserved for Verified Mentor accounts. Your current role is{" "}
-            <span className="font-bold text-emerald-400">{session.role}</span>.
-          </p>
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs"
-          >
-            Go to Your Dashboard
-          </Link>
-        </div>
-      </div>
-    );
+  // Strict Role Redirection: If user is LEARNER, redirect directly to learner dashboard
+  if (session.role === "LEARNER") {
+    redirect("/dashboard/learner");
   }
 
   // Fetch Mentor Profile, Availability, and Sessions

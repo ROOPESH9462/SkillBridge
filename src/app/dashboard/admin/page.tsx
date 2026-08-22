@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
 import { ShieldCheck, Users, UserCheck, Clock, Calendar } from "lucide-react";
-import Link from "next/link";
 import { AdminApplicationTable } from "@/components/AdminApplicationTable";
 
 export default async function AdminDashboardPage() {
@@ -13,27 +12,11 @@ export default async function AdminDashboardPage() {
     redirect("/login");
   }
 
-  if (session.role !== "ADMIN") {
-    return (
-      <div className="min-h-[70vh] flex items-center justify-center p-4">
-        <div className="max-w-md p-8 rounded-3xl glass-card border border-rose-500/30 text-center space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
-          <h1 className="text-xl font-bold text-slate-100">403 — Admin Access Required</h1>
-          <p className="text-xs text-slate-400">
-            This dashboard is strictly reserved for Admin accounts. Your role is{" "}
-            <span className="font-bold text-emerald-400">{session.role}</span>.
-          </p>
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs"
-          >
-            Go to Your Dashboard
-          </Link>
-        </div>
-      </div>
-    );
+  // Strict Role Redirection: If user is LEARNER or MENTOR, redirect directly to their own dashboard
+  if (session.role === "LEARNER") {
+    redirect("/dashboard/learner");
+  } else if (session.role === "MENTOR") {
+    redirect("/dashboard/mentor");
   }
 
   // Fetch Analytics

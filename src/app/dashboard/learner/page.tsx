@@ -16,27 +16,9 @@ export default async function LearnerDashboardPage() {
     redirect("/login");
   }
 
-  if (session.role !== "LEARNER" && session.role !== "ADMIN") {
-    return (
-      <div className="min-h-[70vh] flex items-center justify-center p-4">
-        <div className="max-w-md p-8 rounded-3xl glass-card border border-rose-500/30 text-center space-y-4">
-          <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto">
-            <ShieldCheck className="w-6 h-6" />
-          </div>
-          <h1 className="text-xl font-bold text-slate-100">403 — Access Forbidden</h1>
-          <p className="text-xs text-slate-400">
-            This dashboard is restricted to Learner accounts. Your role is{" "}
-            <span className="font-bold text-emerald-400">{session.role}</span>.
-          </p>
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs"
-          >
-            Go to Your Dashboard
-          </Link>
-        </div>
-      </div>
-    );
+  // Strict Role Redirection: If user is MENTOR, redirect directly to mentor dashboard
+  if (session.role === "MENTOR") {
+    redirect("/dashboard/mentor");
   }
 
   // Fetch Learner Sessions, Application Status, and Recommendations
