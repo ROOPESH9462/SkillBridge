@@ -67,24 +67,26 @@ async function main() {
   console.log("🔐 Hashing default passwords...");
   const hashedPassword = await bcrypt.hash("password123", 10);
 
-  // 1. Create Skills Taxonomy
+  // 1. Create Real-World Skills Taxonomy
   console.log("📚 Creating skills taxonomy...");
   const skillsData = [
     { name: "Next.js", category: "Software Engineering", description: "React Framework for Web Development with App Router & SSR" },
-    { name: "React", category: "Software Engineering", description: "UI Component Library for Building Web Interfaces" },
-    { name: "System Design", category: "Software Engineering", description: "Scalable Architecture, Microservices, and Load Balancing" },
-    { name: "TypeScript", category: "Software Engineering", description: "Typed JavaScript for Large-Scale Applications" },
-    { name: "Python", category: "AI & Data", description: "General Purpose Language for ML, Data, and Backend APIs" },
-    { name: "FastAPI", category: "AI & Data", description: "Modern, Fast Web Framework for Building APIs in Python" },
-    { name: "PyTorch", category: "AI & Data", description: "Deep Learning Framework for Neural Networks" },
-    { name: "AWS", category: "Cloud & DevOps", description: "Amazon Web Services Infrastructure & Cloud Architecture" },
-    { name: "Docker", category: "Cloud & DevOps", description: "Containerization & Service Isolation" },
-    { name: "Kubernetes", category: "Cloud & DevOps", description: "Container Orchestration & Cluster Management" },
-    { name: "UI/UX Design", category: "Product & Design", description: "User Experience Design, Wireframing, and Prototyping" },
-    { name: "Figma", category: "Product & Design", description: "Collaborative Interface Design & Component Systems" },
-    { name: "Go", category: "Backend Engineering", description: "High-Performance Concurrent Backend Services" },
-    { name: "PostgreSQL", category: "Backend Engineering", description: "Advanced Open-Source Relational Database" },
-    { name: "React Native", category: "Mobile Engineering", description: "Cross-Platform Mobile App Development" },
+    { name: "React", category: "Software Engineering", description: "UI Component Library for Building Modern Web Interfaces" },
+    { name: "System Design", category: "Software Engineering", description: "Scalable Architecture, Microservices, and Distributed Systems" },
+    { name: "TypeScript", category: "Software Engineering", description: "Typed JavaScript for Production Applications" },
+    { name: "Python", category: "AI & Data", description: "General Purpose Language for ML, Data Pipelines, and APIs" },
+    { name: "FastAPI", category: "AI & Data", description: "Modern, High-Performance Asynchronous Web Framework for Python" },
+    { name: "PyTorch", category: "AI & Data", description: "Deep Learning & AI Model Development Framework" },
+    { name: "AWS", category: "Cloud & DevOps", description: "Amazon Web Services Infrastructure & Cloud Solutions" },
+    { name: "Docker", category: "Cloud & DevOps", description: "Containerization & Service Deployment Isolation" },
+    { name: "Kubernetes", category: "Cloud & DevOps", description: "Container Orchestration & Automated Cluster Management" },
+    { name: "UI/UX Design", category: "Product & Design", description: "User Interface Design, Wireframing & User Research" },
+    { name: "Figma", category: "Product & Design", description: "Collaborative Interface Design & Component Tokens" },
+    { name: "Go", category: "Backend Engineering", description: "High-Concurrency Low-Latency Backend Services" },
+    { name: "PostgreSQL", category: "Backend Engineering", description: "Advanced Enterprise Open-Source Relational Database" },
+    { name: "Node.js", category: "Software Engineering", description: "Asynchronous Event-Driven JavaScript Runtime" },
+    { name: "GraphQL", category: "Backend Engineering", description: "Flexible API Query Language & Middleware Layer" },
+    { name: "Cybersecurity", category: "Security & Cloud", description: "Web Application Security, OWASP & Penetration Testing" },
   ];
 
   const skillMap = new Map<string, string>();
@@ -97,8 +99,8 @@ async function main() {
     skillMap.set(s.name, created.id);
   }
 
-  // 2. Create Admin, Learner, and Generic Test Mentor Accounts
-  console.log("👤 Creating Admin, Learner, and Test Mentor accounts...");
+  // 2. Create Core Admin, Learner, and Test Mentor Accounts
+  console.log("👤 Creating Core System Accounts...");
   const adminUser = await prisma.user.upsert({
     where: { email: "admin@skillbridge.dev" },
     update: {},
@@ -138,9 +140,10 @@ async function main() {
     },
   });
 
-  // Create Learner Skill Goals & Milestones
+  // Create Learner Active Goals & Real-World Milestone Roadmaps
   const nextjsId = skillMap.get("Next.js")!;
   const systemDesignId = skillMap.get("System Design")!;
+  const pythonId = skillMap.get("Python")!;
 
   const nextGoal = await prisma.learnerSkillGoal.create({
     data: {
@@ -152,11 +155,11 @@ async function main() {
 
   await prisma.skillMilestone.createMany({
     data: [
-      { goalId: nextGoal.id, title: "App Router & Dynamic Routing", isCompleted: true },
-      { goalId: nextGoal.id, title: "React Server Components & Streaming", isCompleted: true },
-      { goalId: nextGoal.id, title: "Server Actions & Form Handling", isCompleted: true },
-      { goalId: nextGoal.id, title: "Caching & Revalidation Strategies", isCompleted: false },
-      { goalId: nextGoal.id, title: "Production Deployment & Monitoring", isCompleted: false },
+      { goalId: nextGoal.id, title: "App Router & Dynamic Server Routing", isCompleted: true },
+      { goalId: nextGoal.id, title: "React Server Components & Suspense Streaming", isCompleted: true },
+      { goalId: nextGoal.id, title: "Server Actions & Zod Form Validation", isCompleted: true },
+      { goalId: nextGoal.id, title: "Stale-While-Revalidate & ISR Caching Strategies", isCompleted: false },
+      { goalId: nextGoal.id, title: "Production Deployment & Performance Monitoring", isCompleted: false },
     ],
   });
 
@@ -170,67 +173,67 @@ async function main() {
 
   await prisma.skillMilestone.createMany({
     data: [
-      { goalId: sysGoal.id, title: "Load Balancers & Reverse Proxies", isCompleted: true },
-      { goalId: sysGoal.id, title: "Database Sharding & Replication", isCompleted: false },
-      { goalId: sysGoal.id, title: "Caching Layers (Redis / Memcached)", isCompleted: false },
+      { goalId: sysGoal.id, title: "Load Balancers & Nginx Reverse Proxies", isCompleted: true },
+      { goalId: sysGoal.id, title: "Database Sharding, Indexes & Read Replicas", isCompleted: false },
+      { goalId: sysGoal.id, title: "Distributed Caching (Redis Cluster)", isCompleted: false },
     ],
   });
 
-  // 3. Create Authentic Fictional Mentors
-  console.log("👨‍🏫 Creating Authentic Fictional Mentors...");
+  // 3. Create Authentic Fictional Industry Mentors
+  console.log("👨‍🏫 Creating 8 Authentic Industry Mentors...");
   const mentors = [
     {
       userId: testMentorUser.id,
       name: "Aarav Mehta",
       email: "mentor@skillbridge.dev",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aarav",
-      title: "Senior Frontend Architect",
-      yearsExp: 8,
-      bio: "Frontend architect specializing in large-scale Next.js applications, web performance optimization, and modular UI component design systems.",
+      title: "Staff Frontend Architect (ex-Meta)",
+      yearsExp: 9,
+      bio: "Staff Frontend Architect specializing in large-scale Next.js 14 applications, web performance optimization, and modular UI component design systems.",
       github: "https://github.com/aaravmehta",
       linkedin: "https://linkedin.com/in/aaravmehta-arch",
-      rating: 4.95,
-      reviewCount: 42,
+      rating: 4.96,
+      reviewCount: 48,
       skills: [
-        { name: "Next.js", prof: SkillProficiency.EXPERT, yrs: 6 },
-        { name: "React", prof: SkillProficiency.EXPERT, yrs: 8 },
-        { name: "TypeScript", prof: SkillProficiency.EXPERT, yrs: 7 },
-        { name: "System Design", prof: SkillProficiency.INTERMEDIATE, yrs: 5 },
+        { name: "Next.js", prof: SkillProficiency.EXPERT, yrs: 7 },
+        { name: "React", prof: SkillProficiency.EXPERT, yrs: 9 },
+        { name: "TypeScript", prof: SkillProficiency.EXPERT, yrs: 8 },
+        { name: "System Design", prof: SkillProficiency.EXPERT, yrs: 6 },
       ],
     },
     {
       name: "Priya Nair",
       email: "priya.nair@skillbridge.dev",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Priya",
-      title: "Lead Machine Learning Engineer",
-      yearsExp: 7,
-      bio: "ML engineer focusing on productionizing deep learning models, high-performance FastAPI backends, and MLOps deployment pipelines.",
+      title: "Principal ML & AI Lead (AWS)",
+      yearsExp: 8,
+      bio: "Machine Learning Lead focusing on productionizing deep learning models, high-performance FastAPI backends, and MLOps deployment pipelines.",
       github: "https://github.com/priyanair-ml",
       linkedin: "https://linkedin.com/in/priyanair-ai",
-      rating: 4.92,
-      reviewCount: 38,
+      rating: 4.93,
+      reviewCount: 41,
       skills: [
-        { name: "Python", prof: SkillProficiency.EXPERT, yrs: 7 },
-        { name: "FastAPI", prof: SkillProficiency.EXPERT, yrs: 5 },
-        { name: "PyTorch", prof: SkillProficiency.EXPERT, yrs: 6 },
-        { name: "System Design", prof: SkillProficiency.INTERMEDIATE, yrs: 4 },
+        { name: "Python", prof: SkillProficiency.EXPERT, yrs: 8 },
+        { name: "FastAPI", prof: SkillProficiency.EXPERT, yrs: 6 },
+        { name: "PyTorch", prof: SkillProficiency.EXPERT, yrs: 7 },
+        { name: "System Design", prof: SkillProficiency.INTERMEDIATE, yrs: 5 },
       ],
     },
     {
       name: "Rohan Kapoor",
       email: "rohan.kapoor@skillbridge.dev",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Rohan",
-      title: "Senior Cloud & DevOps Specialist",
-      yearsExp: 9,
-      bio: "Infrastructure expert specializing in AWS Kubernetes clusters, Terraform infrastructure-as-code, and automated CI/CD security pipelines.",
+      title: "Senior DevOps Lead (Kubernetes CKA)",
+      yearsExp: 10,
+      bio: "Infrastructure architect specializing in AWS Kubernetes clusters, Terraform infrastructure-as-code, and automated CI/CD security pipelines.",
       github: "https://github.com/rohankapoor-ops",
       linkedin: "https://linkedin.com/in/rohankapoor-cloud",
-      rating: 4.88,
-      reviewCount: 29,
+      rating: 4.89,
+      reviewCount: 35,
       skills: [
-        { name: "AWS", prof: SkillProficiency.EXPERT, yrs: 9 },
-        { name: "Docker", prof: SkillProficiency.EXPERT, yrs: 8 },
-        { name: "Kubernetes", prof: SkillProficiency.EXPERT, yrs: 7 },
+        { name: "AWS", prof: SkillProficiency.EXPERT, yrs: 10 },
+        { name: "Docker", prof: SkillProficiency.EXPERT, yrs: 9 },
+        { name: "Kubernetes", prof: SkillProficiency.EXPERT, yrs: 8 },
         { name: "System Design", prof: SkillProficiency.EXPERT, yrs: 8 },
       ],
     },
@@ -239,34 +242,69 @@ async function main() {
       email: "ananya.rao@skillbridge.dev",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ananya",
       title: "Principal Product Designer",
-      yearsExp: 6,
-      bio: "Passionate product designer helping developers transition into intuitive UX design, design system tokens, and seamless visual hierarchy.",
+      yearsExp: 7,
+      bio: "Passionate product designer helping developers master intuitive UI/UX design principles, Figma design tokens, and seamless visual hierarchy.",
       github: "https://github.com/ananyarao-design",
       linkedin: "https://linkedin.com/in/ananyarao-ui",
-      rating: 4.97,
-      reviewCount: 51,
+      rating: 4.98,
+      reviewCount: 56,
       skills: [
-        { name: "UI/UX Design", prof: SkillProficiency.EXPERT, yrs: 6 },
-        { name: "Figma", prof: SkillProficiency.EXPERT, yrs: 6 },
-        { name: "React", prof: SkillProficiency.INTERMEDIATE, yrs: 3 },
+        { name: "UI/UX Design", prof: SkillProficiency.EXPERT, yrs: 7 },
+        { name: "Figma", prof: SkillProficiency.EXPERT, yrs: 7 },
+        { name: "React", prof: SkillProficiency.INTERMEDIATE, yrs: 4 },
       ],
     },
     {
       name: "Vikram Shah",
       email: "vikram.shah@skillbridge.dev",
       avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram",
-      title: "Staff Backend Systems Engineer",
-      yearsExp: 10,
-      bio: "Distributed systems engineer passionate about low-latency Go microservices, database index optimization, and event-driven architecture.",
+      title: "Staff Backend Engineer (Uber)",
+      yearsExp: 11,
+      bio: "Distributed systems engineer passionate about low-latency Go microservices, PostgreSQL index tuning, and high-throughput event-driven systems.",
       github: "https://github.com/vikramshah-dev",
       linkedin: "https://linkedin.com/in/vikramshah-backend",
-      rating: 4.90,
-      reviewCount: 33,
+      rating: 4.91,
+      reviewCount: 39,
       skills: [
-        { name: "Go", prof: SkillProficiency.EXPERT, yrs: 8 },
-        { name: "PostgreSQL", prof: SkillProficiency.EXPERT, yrs: 10 },
-        { name: "System Design", prof: SkillProficiency.EXPERT, yrs: 10 },
-        { name: "Docker", prof: SkillProficiency.EXPERT, yrs: 7 },
+        { name: "Go", prof: SkillProficiency.EXPERT, yrs: 9 },
+        { name: "PostgreSQL", prof: SkillProficiency.EXPERT, yrs: 11 },
+        { name: "System Design", prof: SkillProficiency.EXPERT, yrs: 11 },
+        { name: "Docker", prof: SkillProficiency.EXPERT, yrs: 8 },
+      ],
+    },
+    {
+      name: "Devansh Joshi",
+      email: "devansh.joshi@skillbridge.dev",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Devansh",
+      title: "Senior Full Stack Specialist (Stripe)",
+      yearsExp: 7,
+      bio: "Full stack specialist guiding engineers through Node.js asynchronous APIs, GraphQL schemas, and scalable TypeScript full-stack applications.",
+      github: "https://github.com/devansh-stripe",
+      linkedin: "https://linkedin.com/in/devansh-joshi",
+      rating: 4.87,
+      reviewCount: 31,
+      skills: [
+        { name: "Node.js", prof: SkillProficiency.EXPERT, yrs: 7 },
+        { name: "GraphQL", prof: SkillProficiency.EXPERT, yrs: 5 },
+        { name: "TypeScript", prof: SkillProficiency.EXPERT, yrs: 6 },
+        { name: "React", prof: SkillProficiency.EXPERT, yrs: 6 },
+      ],
+    },
+    {
+      name: "Kavya Patel",
+      email: "kavya.patel@skillbridge.dev",
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Kavya",
+      title: "Security Architect (Cloudflare)",
+      yearsExp: 8,
+      bio: "Cybersecurity specialist focused on web application security, OWASP top 10 vulnerability prevention, and cloud security architecture.",
+      github: "https://github.com/kavyapatel-sec",
+      linkedin: "https://linkedin.com/in/kavyapatel-security",
+      rating: 4.94,
+      reviewCount: 44,
+      skills: [
+        { name: "Cybersecurity", prof: SkillProficiency.EXPERT, yrs: 8 },
+        { name: "AWS", prof: SkillProficiency.INTERMEDIATE, yrs: 5 },
+        { name: "Python", prof: SkillProficiency.INTERMEDIATE, yrs: 6 },
       ],
     },
   ];
@@ -320,7 +358,7 @@ async function main() {
         }
       }
 
-      // Weekly Availability Slots (Mon, Wed, Fri)
+      // Weekly Recurring Availability Slots (Mon, Wed, Fri)
       for (const day of [1, 3, 5]) {
         await prisma.mentorAvailability.create({
           data: {
@@ -333,7 +371,7 @@ async function main() {
         });
       }
 
-      // Sample Completed Session & Verified Review for Aarav Mehta
+      // Completed Session & Verified Review for Aarav Mehta
       if (m.name === "Aarav Mehta") {
         const session = await prisma.mentorshipSession.create({
           data: {
@@ -345,7 +383,7 @@ async function main() {
             durationMinutes: 45,
             status: BookingStatus.COMPLETED,
             topic: "Next.js App Router Caching & Revalidation Deep Dive",
-            notes: "Covered staled-while-revalidate patterns, Server Actions error boundaries, and ISR revalidation triggers.",
+            notes: "Covered stale-while-revalidate patterns, Server Actions error boundaries, and ISR revalidation triggers.",
             meetingLink: "https://meet.skillbridge.dev/session-aarav-siddharth",
           },
         });
@@ -356,16 +394,15 @@ async function main() {
             authorId: learnerUser.id,
             targetUserId: user.id,
             rating: 5,
-            comment: "Aarav provided unmatched clarity on React Server Components caching! The architectural diagram we made together cleared up weeks of confusion.",
+            comment: "Aarav provided unmatched clarity on React Server Components caching! The architectural diagram we built cleared up weeks of confusion.",
           },
         });
 
-        // Sample Notification
         await prisma.notification.create({
           data: {
             userId: learnerUser.id,
             title: "Session Completed & Verified",
-            message: "Your mentorship session with Aarav Mehta has been completed. Leave a review!",
+            message: "Your mentorship session with Aarav Mehta has been completed. Verified review published!",
             type: NotificationType.SESSION_COMPLETED,
             isRead: true,
           },
@@ -374,7 +411,34 @@ async function main() {
     }
   }
 
-  console.log("✅ Idempotent seed database populated successfully!");
+  // 4. Create a Pending Application for Admin Demo Table
+  console.log("📝 Creating Pending Application for Admin Review...");
+  const applicantUser = await prisma.user.create({
+    data: {
+      email: "applicant@skillbridge.dev",
+      name: "Neha Sharma",
+      passwordHash: hashedPassword,
+      role: Role.LEARNER,
+      accountStatus: AccountStatus.ACTIVE,
+      avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Neha",
+    },
+  });
+
+  await prisma.mentorApplication.create({
+    data: {
+      userId: applicantUser.id,
+      professionalTitle: "Lead AI Systems Engineer",
+      yearsExperience: 6,
+      skills: "Python, FastAPI, PyTorch, System Design",
+      bio: "Building enterprise generative AI search pipelines and model evaluation suites. Excited to mentor junior AI engineers.",
+      portfolioUrl: "https://github.com/nehasharma-ai",
+      linkedinUrl: "https://linkedin.com/in/nehasharma-ai",
+      reasonForMentoring: "I want to help upcoming engineers avoid common pitfalls when deploying machine learning models to production.",
+      status: VerificationStatus.PENDING,
+    },
+  });
+
+  console.log("✅ Real-time authentic database populated successfully!");
 }
 
 main()

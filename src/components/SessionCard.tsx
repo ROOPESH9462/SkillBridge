@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { Clock, CheckCircle2, XCircle, CheckSquare, AlertTriangle, Star } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Clock, CheckCircle2, XCircle, CheckSquare, AlertTriangle, Star, Video } from "lucide-react";
 import { ReviewModal } from "./ReviewModal";
 
 interface SessionCardProps {
@@ -26,6 +27,7 @@ interface SessionCardProps {
 }
 
 export function SessionCard({ session, currentUserId, userRole, onStatusUpdate }: SessionCardProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleUpdate = async (nextStatus: string) => {
@@ -40,6 +42,11 @@ export function SessionCard({ session, currentUserId, userRole, onStatusUpdate }
       if (!res.ok || !data.success) {
         throw new Error(data.message || "Failed to update session status");
       }
+
+      // Real-time event propagation across components
+      window.dispatchEvent(new Event("skillbridge-session-updated"));
+      router.refresh();
+
       if (onStatusUpdate) onStatusUpdate();
     } catch (e: any) {
       alert(e.message || "Status update failed");
@@ -75,6 +82,15 @@ export function SessionCard({ session, currentUserId, userRole, onStatusUpdate }
         <p className="text-xs text-slate-400 mt-1">
           Duration: {session.durationMinutes} minutes
         </p>
+
+        {session.meetingLink && session.status === "CONFIRMED" && (
+          <div className="mt-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold">
+            <Video className="w-4 h-4 text-emerald-400" />
+            <a href={session.meetingLink} target="_blank" rel="noreferrer" className="hover:underline">
+              Join Virtual Session Room
+            </a>
+          </div>
+        )}
       </div>
 
       {/* Verified Review display if submitted */}
@@ -166,7 +182,11 @@ export function SessionCard({ session, currentUserId, userRole, onStatusUpdate }
               sessionId={session.id}
               mentorName={session.mentor.name}
               topic={session.topic}
-              onSuccess={onStatusUpdate}
+              onSuccess={() => {
+                window.dispatchEvent(new Event("skillbridge-session-updated"));
+                router.refresh();
+                if (onStatusUpdate) onStatusUpdate();
+              }}
             />
           )}
         </div>

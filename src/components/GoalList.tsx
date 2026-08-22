@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { GoalCard } from "./GoalCard";
 import { GoalCreationModal } from "./GoalCreationModal";
 import { Target, AlertCircle } from "lucide-react";
@@ -23,6 +24,7 @@ interface GoalItem {
 }
 
 export function GoalList() {
+  const router = useRouter();
   const [goals, setGoals] = useState<GoalItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +48,13 @@ export function GoalList() {
 
   useEffect(() => {
     fetchGoals();
+
+    const handleGoalUpdateEvent = () => {
+      fetchGoals();
+    };
+
+    window.addEventListener("skillbridge-goal-updated", handleGoalUpdateEvent);
+    return () => window.removeEventListener("skillbridge-goal-updated", handleGoalUpdateEvent);
   }, []);
 
   const handleToggleMilestone = async (milestoneId: string) => {
@@ -57,6 +66,10 @@ export function GoalList() {
       if (!res.ok || !data.success) {
         throw new Error(data.message || "Failed to update milestone status");
       }
+
+      // Propagate real-time event to refresh recommendation engine & milestone roadmaps
+      window.dispatchEvent(new Event("skillbridge-goal-updated"));
+      router.refresh();
       await fetchGoals();
     } catch (err: any) {
       alert(err.message || "Milestone update failed");
@@ -74,6 +87,9 @@ export function GoalList() {
       if (!res.ok || !data.success) {
         throw new Error(data.message || "Failed to delete skill goal");
       }
+
+      window.dispatchEvent(new Event("skillbridge-goal-updated"));
+      router.refresh();
       await fetchGoals();
     } catch (err: any) {
       alert(err.message || "Failed to delete goal");
@@ -93,7 +109,13 @@ export function GoalList() {
           </p>
         </div>
 
-        <GoalCreationModal onGoalCreated={fetchGoals} />
+        <GoalCreationModal
+          onGoalCreated={() => {
+            window.dispatchEvent(new Event("skillbridge-goal-updated"));
+            router.refresh();
+            fetchGoals();
+          }}
+        />
       </div>
 
       {loading ? (
