@@ -1,11 +1,8 @@
 import React from "react";
 import Link from "next/link";
-import { getSessionUser } from "@/lib/session";
 import { Sparkles, ArrowRight, ShieldCheck, Target, Quote, Heart, Lock, CalendarCheck, Bell, Star, Cpu, Layers } from "lucide-react";
 
 export default async function HomePage() {
-  const session = await getSessionUser();
-
   const platformModules = [
     {
       icon: Lock,
@@ -78,31 +75,19 @@ export default async function HomePage() {
             </Link>
 
             <div className="flex items-center gap-3">
-              {session ? (
-                <Link
-                  href="/dashboard"
-                  className="px-4 py-2 text-xs font-extrabold rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md shadow-emerald-500/20 transition-all flex items-center gap-1.5"
-                >
-                  <ShieldCheck className="w-4 h-4" />
-                  Go to Dashboard
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    className="px-4 py-2 text-xs font-bold rounded-xl text-slate-300 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="px-5 py-2 text-xs font-extrabold rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-1.5"
-                  >
-                    Get Started
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
-                </>
-              )}
+              <Link
+                href="/login"
+                className="px-4 py-2 text-xs font-bold rounded-xl text-slate-300 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/register"
+                className="px-5 py-2 text-xs font-extrabold rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-1.5"
+              >
+                Get Started
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
           </div>
         </header>
