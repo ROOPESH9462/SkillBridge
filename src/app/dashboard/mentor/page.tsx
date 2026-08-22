@@ -142,7 +142,7 @@ export default async function MentorDashboardPage() {
             <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
           </div>
           <span className="text-2xl font-extrabold text-slate-100">
-            {profile?.overallRating?.toFixed(2) || "5.00"}
+            {typeof profile?.overallRating === "number" ? profile.overallRating.toFixed(2) : "5.00"}
           </span>
         </div>
       </div>

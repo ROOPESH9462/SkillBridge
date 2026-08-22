@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { signJWT, verifyJWT, JWTPayload } from "./auth";
+import { db } from "./db";
 
 export const COOKIE_NAME = "sb_session";
 
@@ -31,7 +32,30 @@ export async function getSessionUser(): Promise<JWTPayload | null> {
   const cookieStore = cookies();
   const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token) return null;
-  return verifyJWT(token);
+  
+  const payload = verifyJWT(token);
+  if (!payload) return null;
+
+  // Always synchronize latest role and status from database so Admin approvals take effect in real-time
+  try {
+    const latestUser = await db.user.findUnique({
+      where: { id: payload.userId },
+      select: { role: true, accountStatus: true, name: true, avatar: true },
+    });
+    if (latestUser) {
+      return {
+        ...payload,
+        name: latestUser.name,
+        role: latestUser.role,
+        accountStatus: latestUser.accountStatus,
+        avatar: latestUser.avatar,
+      };
+    }
+  } catch (e) {
+    // fallback to JWT payload
+  }
+
+  return payload;
 }
 
 export async function requireAuth(): Promise<JWTPayload> {
