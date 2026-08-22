@@ -2,10 +2,12 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
-import { Calendar, BookOpen, Clock, ShieldCheck, ArrowRight } from "lucide-react";
+import { Calendar, BookOpen, Clock, ShieldCheck, ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { GoalList } from "@/components/GoalList";
 import { MentorApplicationForm } from "@/components/MentorApplicationForm";
+import { RecommendationService } from "@/services/recommendation.service";
+import { RecommendedMentorCard } from "@/components/RecommendedMentorCard";
 
 export default async function LearnerDashboardPage() {
   const session = await getSessionUser();
@@ -37,7 +39,7 @@ export default async function LearnerDashboardPage() {
     );
   }
 
-  // Fetch Learner Sessions & Mentor Application Status
+  // Fetch Learner Sessions, Application Status, and Recommendations
   const learnerData = await db.user.findUnique({
     where: { id: session.userId },
     include: {
@@ -53,6 +55,7 @@ export default async function LearnerDashboardPage() {
   });
 
   const latestApp = learnerData?.applications[0];
+  const recommendedMentors = await RecommendationService.getRecommendedMentors(session.userId);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
@@ -72,7 +75,7 @@ export default async function LearnerDashboardPage() {
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Track your active skill goals, milestone progress, and mentor applications.
+              Track your active skill goals, milestone progress, and personalized mentor recommendations.
             </p>
           </div>
         </div>
@@ -81,9 +84,43 @@ export default async function LearnerDashboardPage() {
           href="/mentors"
           className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 flex items-center gap-2 transition-all"
         >
-          Explore Mentor Directory
+          Explore Full Directory
           <ArrowRight className="w-4 h-4" />
         </Link>
+      </div>
+
+      {/* Recommended Mentors Section */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-extrabold text-slate-100 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-emerald-400 fill-emerald-400" />
+              Recommended Mentors for Your Learning Goals
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Matched using multi-factor scoring (Skill Match 50%, Proficiency 15%, Experience 10%, Rating 10%, Availability 10%, History 5%)
+            </p>
+          </div>
+
+          <Link
+            href="/mentors"
+            className="text-xs font-bold text-emerald-400 hover:underline flex items-center gap-1"
+          >
+            View All ({recommendedMentors.length})
+          </Link>
+        </div>
+
+        {recommendedMentors.length === 0 ? (
+          <div className="p-8 text-center glass-card rounded-2xl border border-emerald-500/10 text-xs text-slate-400">
+            No mentor recommendations available yet. Set a skill goal to generate personalized matches!
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {recommendedMentors.slice(0, 2).map((m) => (
+              <RecommendedMentorCard key={m.mentorId} mentor={m} />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Main Content Grid */}
