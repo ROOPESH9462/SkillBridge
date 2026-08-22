@@ -2,8 +2,9 @@ import React from "react";
 import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/session";
 import { db } from "@/lib/db";
-import { BookOpen, Calendar, Target, CheckCircle2, Clock, ShieldCheck, ArrowRight } from "lucide-react";
+import { Calendar, BookOpen, Clock, ShieldCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { GoalList } from "@/components/GoalList";
 import { MentorApplicationForm } from "@/components/MentorApplicationForm";
 
 export default async function LearnerDashboardPage() {
@@ -36,14 +37,11 @@ export default async function LearnerDashboardPage() {
     );
   }
 
-  // Fetch Learner Data & Application Status
+  // Fetch Learner Sessions & Mentor Application Status
   const learnerData = await db.user.findUnique({
     where: { id: session.userId },
     include: {
       applications: { orderBy: { submittedAt: "desc" }, take: 1 },
-      skillGoals: {
-        include: { skill: true, milestones: true },
-      },
       learnerSessions: {
         include: {
           mentor: { include: { mentorProfile: true } },
@@ -74,7 +72,7 @@ export default async function LearnerDashboardPage() {
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Track your active skill goals, scheduled sessions, and mentor applications.
+              Track your active skill goals, milestone progress, and mentor applications.
             </p>
           </div>
         </div>
@@ -90,82 +88,10 @@ export default async function LearnerDashboardPage() {
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Skill Goals & Milestones */}
-        <div className="lg:col-span-2 space-y-8">
-          <div className="space-y-6">
-            <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-              <Target className="w-5 h-5 text-emerald-400" />
-              Active Skill Goals & Progress
-            </h2>
-
-            {!learnerData?.skillGoals || learnerData.skillGoals.length === 0 ? (
-              <div className="p-8 text-center glass-card rounded-2xl border border-emerald-500/10">
-                <p className="text-xs text-slate-400">
-                  No skill goals defined yet. Explore mentors to select target goals!
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {learnerData.skillGoals.map((goal) => {
-                  const total = goal.milestones.length;
-                  const completed = goal.milestones.filter((m) => m.isCompleted).length;
-                  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-                  return (
-                    <div
-                      key={goal.id}
-                      className="p-6 rounded-2xl glass-card border border-emerald-500/20 space-y-4"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <span className="text-xs uppercase font-extrabold text-emerald-400 tracking-wider">
-                            Goal Skill
-                          </span>
-                          <h3 className="text-lg font-bold text-slate-100">{goal.skill.name}</h3>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-lg font-extrabold text-emerald-400">{pct}%</span>
-                          <p className="text-[10px] text-slate-400">
-                            {completed} / {total} Milestones
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="w-full h-2 rounded-full bg-emerald-950/60 overflow-hidden border border-emerald-500/20">
-                        <div
-                          className="h-full bg-gradient-to-r from-emerald-500 to-teal-300 transition-all duration-500"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-
-                      <div className="space-y-2 pt-2 border-t border-emerald-500/10">
-                        <p className="text-xs font-bold text-slate-300">Milestone Roadmap:</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {goal.milestones.map((milestone) => (
-                            <div
-                              key={milestone.id}
-                              className={`p-2.5 rounded-xl border text-xs flex items-center justify-between ${
-                                milestone.isCompleted
-                                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-                                  : "bg-dark-bg/40 border-emerald-500/10 text-slate-400"
-                              }`}
-                            >
-                              <span className="truncate pr-2">{milestone.title}</span>
-                              {milestone.isCompleted ? (
-                                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                              ) : (
-                                <Clock className="w-4 h-4 text-slate-500 shrink-0" />
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+        {/* Left Column: Interactive Goal List & Mentor Application */}
+        <div className="lg:col-span-2 space-y-10">
+          {/* Live Skill Goals & Milestones Component */}
+          <GoalList />
 
           {/* Mentor Application Section */}
           <div className="pt-6 border-t border-emerald-500/10 space-y-4">
@@ -187,7 +113,7 @@ export default async function LearnerDashboardPage() {
             ) : latestApp?.status === "VERIFIED" ? (
               <div className="p-6 rounded-2xl glass-card border border-emerald-500/30 bg-emerald-500/5 space-y-2">
                 <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
-                  <CheckCircle2 className="w-4 h-4" />
+                  <ShieldCheck className="w-4 h-4" />
                   Application Approved! You are a Verified Mentor
                 </div>
                 <p className="text-xs text-slate-300">
