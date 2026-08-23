@@ -122,15 +122,24 @@ export function MentorProfileView({ mentor }: MentorDetailProps) {
             </div>
           </div>
 
-          {/* Smooth Scroll Button to Inline Booking Section */}
-          <div className="w-full md:w-auto text-center md:text-right space-y-2">
+          {/* Executive Action Card */}
+          <div className="w-full md:w-auto p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-center md:text-right space-y-2 shrink-0 glow-green-sm">
+            <div className="flex items-center justify-center md:justify-end gap-2 text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+              <span>Instant 1-on-1 Availability</span>
+            </div>
+
             <button
               onClick={scrollToBooking}
               className="px-6 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 transition-all w-full md:w-auto scale-105"
             >
               <Zap className="w-4 h-4 fill-slate-950" />
-              Book Mentorship Session ↓
+              Book 1-on-1 Mentorship Session ↓
             </button>
+            
+            <p className="text-[10px] text-slate-400 font-medium text-center md:text-right">
+              45 Mins Live Video • 100% Free / Included
+            </p>
           </div>
         </div>
 
