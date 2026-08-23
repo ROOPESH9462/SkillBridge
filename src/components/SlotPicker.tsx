@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Clock, Calendar as CalendarIcon, AlertCircle, CheckCircle2, Sun, Sunset, Moon, Sparkles } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Clock, Calendar as CalendarIcon, AlertCircle, CheckCircle2, Sun, Sunset, Moon, Sparkles, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface SlotItem {
   start: string;
@@ -19,11 +19,14 @@ interface SlotPickerProps {
 }
 
 export function SlotPicker({ mentorId, onSlotSelected, selectedSlotISO }: SlotPickerProps) {
-  // Generate next 7 days for fast date tabs
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showCustomDatePicker, setShowCustomDatePicker] = useState(false);
+
+  // Generate next 14 days for fast date tabs
   const getUpcomingDays = () => {
     const days = [];
     const today = new Date();
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 1; i <= 14; i++) {
       const d = new Date(today);
       d.setDate(today.getDate() + i);
       const dateStr = d.toISOString().split("T")[0];
@@ -64,11 +67,17 @@ export function SlotPicker({ mentorId, onSlotSelected, selectedSlotISO }: SlotPi
     }
   };
 
-  // Group slots by Morning (before 12:00), Afternoon (12:00 - 17:00), Evening (after 17:00)
-  const getSlotHour = (timeStr: string) => {
-    const hour = parseInt(timeStr.split(":")[0]);
-    return hour;
+  const scrollDays = (direction: "left" | "right") => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({
+        left: direction === "left" ? -200 : 200,
+        behavior: "smooth",
+      });
+    }
   };
+
+  // Group slots by Morning (< 12:00), Afternoon (12:00 - 17:00), Evening (>= 17:00)
+  const getSlotHour = (timeStr: string) => parseInt(timeStr.split(":")[0]);
 
   const morningSlots = slots.filter((s) => getSlotHour(s.start) < 12);
   const afternoonSlots = slots.filter((s) => getSlotHour(s.start) >= 12 && getSlotHour(s.start) < 17);
@@ -77,62 +86,96 @@ export function SlotPicker({ mentorId, onSlotSelected, selectedSlotISO }: SlotPi
   const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "Local Time";
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       {/* Date Selector Header */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+          <label className="text-xs font-extrabold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
             <CalendarIcon className="w-3.5 h-3.5 text-emerald-400" />
             1. Select Session Date *
           </label>
-          <span className="text-[10px] text-emerald-400/90 font-mono font-semibold">
-            Timezone: {userTimezone}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-emerald-400 font-mono font-semibold">
+              TZ: {userTimezone}
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowCustomDatePicker(!showCustomDatePicker)}
+              className="text-[10px] text-slate-400 hover:text-emerald-300 font-bold underline transition-colors"
+            >
+              {showCustomDatePicker ? "Hide Picker" : "Custom Date"}
+            </button>
+          </div>
         </div>
 
-        {/* 1-Click Fast Date Strip */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1.5 scrollbar-thin">
-          {upcomingDays.map((day) => {
-            const isSelected = dateStr === day.dateStr;
-            return (
-              <button
-                key={day.dateStr}
-                type="button"
-                onClick={() => setDateStr(day.dateStr)}
-                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all border text-center shrink-0 min-w-[70px] ${
-                  isSelected
-                    ? "bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20 scale-105"
-                    : "bg-emerald-500/10 border-emerald-500/20 text-slate-300 hover:border-emerald-500/40 hover:text-emerald-300"
-                }`}
-              >
-                <span className="block text-[10px] uppercase font-extrabold opacity-80">{day.dayName}</span>
-                <span className="block text-xs mt-0.5">{day.monthDay}</span>
-              </button>
-            );
-          })}
+        {/* 1-Click Fast Date Strip with Arrow Navigation */}
+        <div className="relative group">
+          <button
+            type="button"
+            onClick={() => scrollDays("left")}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-slate-900/90 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 shadow-lg transition-all opacity-80 group-hover:opacity-100"
+            title="Scroll Left"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+
+          <div
+            ref={scrollRef}
+            className="flex items-center gap-2 overflow-x-auto px-7 py-1 no-scrollbar scroll-smooth"
+          >
+            {upcomingDays.map((day) => {
+              const isSelected = dateStr === day.dateStr;
+              return (
+                <button
+                  key={day.dateStr}
+                  type="button"
+                  onClick={() => setDateStr(day.dateStr)}
+                  className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition-all border text-center shrink-0 min-w-[72px] ${
+                    isSelected
+                      ? "bg-emerald-500 text-slate-950 border-emerald-400 shadow-lg shadow-emerald-500/20 scale-105"
+                      : "bg-emerald-950/40 border-emerald-500/20 text-slate-300 hover:border-emerald-500/50 hover:text-emerald-300"
+                  }`}
+                >
+                  <span className="block text-[10px] uppercase font-extrabold opacity-80">{day.dayName}</span>
+                  <span className="block text-xs mt-0.5">{day.monthDay}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => scrollDays("right")}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-1.5 rounded-full bg-slate-900/90 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 shadow-lg transition-all opacity-80 group-hover:opacity-100"
+            title="Scroll Right"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
         </div>
 
-        {/* Custom Date Input Option */}
-        <div className="pt-1">
-          <input
-            type="date"
-            min={new Date().toISOString().split("T")[0]}
-            value={dateStr}
-            onChange={(e) => setDateStr(e.target.value)}
-            className="w-full px-4 py-2 text-xs rounded-xl border border-emerald-500/20 bg-dark-bg text-slate-200 focus:outline-none focus:border-emerald-500/60 transition-colors"
-          />
-        </div>
+        {/* Optional Custom Date Picker Toggle */}
+        {showCustomDatePicker && (
+          <div className="pt-1 animate-in fade-in">
+            <input
+              type="date"
+              min={new Date().toISOString().split("T")[0]}
+              value={dateStr}
+              onChange={(e) => setDateStr(e.target.value)}
+              className="w-full px-4 py-2 text-xs rounded-xl border border-emerald-500/20 bg-dark-bg text-slate-200 focus:outline-none focus:border-emerald-500/60 transition-colors"
+            />
+          </div>
+        )}
       </div>
 
       {/* Dynamic Slots Section */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+          <span className="text-xs font-extrabold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5 text-emerald-400" />
             2. Choose Available Time Slot (45 Mins) *
           </span>
           {slots.filter((s) => s.available).length > 0 && (
-            <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+            <span className="text-[11px] font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
               {slots.filter((s) => s.available).length} slots available
             </span>
           )}
@@ -163,11 +206,11 @@ export function SlotPicker({ mentorId, onSlotSelected, selectedSlotISO }: SlotPi
             </button>
           </div>
         ) : (
-          <div className="space-y-4 max-h-64 overflow-y-auto pr-1">
+          <div className="space-y-3.5 max-h-56 overflow-y-auto pr-1">
             {/* Morning Slots */}
             {morningSlots.length > 0 && (
               <div className="space-y-1.5">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                   <Sun className="w-3 h-3 text-amber-400" /> Morning Sessions
                 </span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -193,7 +236,7 @@ export function SlotPicker({ mentorId, onSlotSelected, selectedSlotISO }: SlotPi
             {/* Afternoon Slots */}
             {afternoonSlots.length > 0 && (
               <div className="space-y-1.5">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                   <Sunset className="w-3 h-3 text-amber-500" /> Afternoon Sessions
                 </span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -219,7 +262,7 @@ export function SlotPicker({ mentorId, onSlotSelected, selectedSlotISO }: SlotPi
             {/* Evening Slots */}
             {eveningSlots.length > 0 && (
               <div className="space-y-1.5">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                   <Moon className="w-3 h-3 text-indigo-400" /> Evening Sessions
                 </span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
