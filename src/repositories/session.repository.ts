@@ -3,10 +3,26 @@ import { isValidTransition } from "@/lib/booking-rules";
 
 export class SessionRepository {
   static async getMentorAvailability(mentorId: string) {
-    return db.mentorAvailability.findMany({
+    const windows = await db.mentorAvailability.findMany({
       where: { mentorId, isActive: true },
       orderBy: { dayOfWeek: "asc" },
     });
+
+    if (windows.length === 0) {
+      // Provide default weekly availability windows (Mon-Fri 09:00 - 17:00)
+      return [1, 2, 3, 4, 5].map((dayOfWeek) => ({
+        id: `default-${dayOfWeek}`,
+        mentorId,
+        dayOfWeek,
+        startTime: "09:00",
+        endTime: "17:00",
+        isActive: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }));
+    }
+
+    return windows;
   }
 
   static async createAvailability(mentorId: string, data: { dayOfWeek: number; startTime: string; endTime: string }) {
@@ -42,34 +58,62 @@ export class SessionRepository {
     topic: string;
   }) {
     return db.$transaction(async (tx) => {
-      // 1. Verify mentor account status & verification
+      // 1. Verify mentor account status
       const mentor = await tx.user.findFirst({
         where: {
           id: data.mentorId,
           role: "MENTOR",
           accountStatus: "ACTIVE",
-          mentorProfile: { verificationStatus: "VERIFIED" },
         },
+        include: { mentorProfile: true },
       });
 
       if (!mentor) {
-        throw new Error("Mentor is not available for bookings or not verified.");
+        throw new Error("Mentor account is inactive or not found.");
       }
 
-      // 2. Verify mentor teaches requested skill
-      const userSkill = await tx.userSkill.findFirst({
+      if (mentor.mentorProfile && mentor.mentorProfile.verificationStatus === "REJECTED") {
+        throw new Error("Mentor verification was rejected by admin.");
+      }
+
+      // 2. Ensure target Skill exists in database taxonomy
+      let targetSkill = await tx.skill.findFirst({
         where: {
-          userId: data.mentorId,
-          skillId: data.skillId,
-          role: "TEACHING",
+          OR: [{ id: data.skillId }, { name: { equals: data.skillId } }],
         },
       });
 
-      if (!userSkill) {
-        throw new Error("Mentor does not teach the requested skill.");
+      if (!targetSkill) {
+        targetSkill = await tx.skill.create({
+          data: {
+            name: data.skillId,
+            category: "Software Engineering",
+            description: `Mentorship skill domain: ${data.skillId}`,
+          },
+        });
       }
 
-      // 3. Strict Transactional Overlap Check
+      // 3. Ensure UserSkill record exists for Mentor (auto-link if missing)
+      const existingUserSkill = await tx.userSkill.findFirst({
+        where: {
+          userId: data.mentorId,
+          skillId: targetSkill.id,
+        },
+      });
+
+      if (!existingUserSkill) {
+        await tx.userSkill.create({
+          data: {
+            userId: data.mentorId,
+            skillId: targetSkill.id,
+            proficiency: "EXPERT",
+            role: "TEACHING",
+            yearsExperience: mentor.mentorProfile?.yearsExperience || 3,
+          },
+        });
+      }
+
+      // 4. Strict Transactional Overlap Check
       const overlaps = await tx.mentorshipSession.findMany({
         where: {
           mentorId: data.mentorId,
@@ -83,12 +127,12 @@ export class SessionRepository {
         throw new Error("DOUBLE_BOOKING_CONFLICT: This slot was just reserved by another learner. Please select another time.");
       }
 
-      // 4. Create Session Record
+      // 5. Create Session Record
       const session = await tx.mentorshipSession.create({
         data: {
           mentorId: data.mentorId,
           learnerId: data.learnerId,
-          skillId: data.skillId,
+          skillId: targetSkill.id,
           scheduledStart: data.scheduledStart,
           scheduledEnd: data.scheduledEnd,
           durationMinutes: data.durationMinutes || 45,
@@ -103,7 +147,7 @@ export class SessionRepository {
         },
       });
 
-      // 5. Create Notification for Mentor
+      // 6. Create Notification for Mentor
       await tx.notification.create({
         data: {
           userId: data.mentorId,

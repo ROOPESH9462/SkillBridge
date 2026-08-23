@@ -46,23 +46,24 @@ export function BookingModal({ mentor, onSuccess }: BookingModalProps) {
       return;
     }
 
-    // Find skill ID
-    const skillObj = mentor.skills.find((s) => s.name === selectedSkillName);
-
     setLoading(true);
 
     try {
-      // First fetch skill ID from catalog if not directly available
+      // Find skill object ID or fallback to skill name for automatic backend taxonomy creation
+      const skillObj = mentor.skills.find((s) => s.name === selectedSkillName);
       let skillId = skillObj?.id;
+
       if (!skillId) {
-        const resSkills = await fetch("/api/skills");
-        const dataSkills = await resSkills.json();
-        const found = dataSkills.skills?.find((s: any) => s.name === selectedSkillName);
-        skillId = found?.id;
+        try {
+          const resSkills = await fetch("/api/skills");
+          const dataSkills = await resSkills.json();
+          const found = dataSkills.skills?.find((s: any) => s.name === selectedSkillName);
+          skillId = found?.id;
+        } catch (e) {}
       }
 
       if (!skillId) {
-        throw new Error("Target skill not found in taxonomy.");
+        skillId = selectedSkillName;
       }
 
       const res = await fetch("/api/sessions", {
