@@ -13,8 +13,9 @@ import {
   BookOpen,
   ArrowLeft,
   MessageSquare,
+  Zap,
 } from "lucide-react";
-import { BookingModal } from "./BookingModal";
+import { InlineBookingSection } from "./InlineBookingSection";
 
 interface MentorDetailProps {
   mentor: {
@@ -58,6 +59,13 @@ interface MentorDetailProps {
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export function MentorProfileView({ mentor }: MentorDetailProps) {
+  const scrollToBooking = () => {
+    const el = document.getElementById("booking-section");
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* Back Button */}
@@ -114,9 +122,15 @@ export function MentorProfileView({ mentor }: MentorDetailProps) {
             </div>
           </div>
 
-          {/* Booking Button Modal */}
+          {/* Smooth Scroll Button to Inline Booking Section */}
           <div className="w-full md:w-auto text-center md:text-right space-y-2">
-            <BookingModal mentor={mentor} />
+            <button
+              onClick={scrollToBooking}
+              className="px-6 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 transition-all w-full md:w-auto scale-105"
+            >
+              <Zap className="w-4 h-4 fill-slate-950" />
+              Book Mentorship Session ↓
+            </button>
           </div>
         </div>
 
@@ -162,6 +176,9 @@ export function MentorProfileView({ mentor }: MentorDetailProps) {
           )}
         </div>
       </div>
+
+      {/* DEDICATED INLINE BOOKING SECTION (OUT OF THE BOX!) */}
+      <InlineBookingSection mentor={mentor} />
 
       {/* Grid: Teaching Skills & Weekly Availability */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
