@@ -114,20 +114,20 @@ export function BookingModal({ mentor, onSuccess }: BookingModalProps) {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
-          <div className="w-full max-w-2xl rounded-3xl glass-card border border-emerald-500/30 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4">
+          <div className="w-full max-w-2xl rounded-3xl glass-card border border-emerald-500/30 shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[88vh] animate-in fade-in zoom-in-95 my-auto">
             
             {/* Fixed Header Bar */}
-            <div className="p-5 sm:p-6 bg-slate-950/70 border-b border-emerald-500/15 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-3.5">
+            <div className="p-4 sm:p-5 bg-slate-950/90 border-b border-emerald-500/15 flex items-center justify-between shrink-0 z-10">
+              <div className="flex items-center gap-3">
                 <img
                   src={mentor.avatar}
                   alt={mentor.name}
-                  className="w-12 h-12 rounded-2xl bg-emerald-950 border border-emerald-500/30 object-cover shadow"
+                  className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-emerald-950 border border-emerald-500/30 object-cover shadow"
                 />
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-lg sm:text-xl font-extrabold text-slate-100">{mentor.name}</h2>
+                    <h2 className="text-base sm:text-lg font-extrabold text-slate-100">{mentor.name}</h2>
                     <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-extrabold text-[10px] uppercase">
                       Verified Mentor
                     </span>
@@ -145,47 +145,51 @@ export function BookingModal({ mentor, onSuccess }: BookingModalProps) {
                 className="p-2 rounded-xl bg-slate-900/80 text-slate-400 hover:text-slate-200 border border-emerald-500/15 transition-colors"
                 title="Close modal"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
-            {/* Modal Body & Form */}
+            {/* Modal Body: Success View vs Form View */}
             {success ? (
-              <div className="p-6 sm:p-8 overflow-y-auto py-8 text-center space-y-5 glow-green">
-                <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400 shadow-xl">
-                  <CheckCircle2 className="w-9 h-9" />
-                </div>
-
-                <div>
-                  <h3 className="text-2xl font-extrabold text-slate-100">Mentorship Session Reserved!</h3>
-                  <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed mt-1.5">
-                    Your session request for <strong>"{topic}"</strong> with <strong>{mentor.name}</strong> on{" "}
-                    <strong>{new Date(selectedSlot!.startTimeISO).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</strong> at <strong>{selectedSlot!.start}</strong> has been submitted.
-                  </p>
-                </div>
-
-                {/* Session Meeting Card */}
-                {bookedMeetingLink && (
-                  <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-2 max-w-md mx-auto">
-                    <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider block">
-                      Dedicated Video Room Link
-                    </span>
-                    <a
-                      href={bookedMeetingLink}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-mono text-emerald-300 font-bold hover:underline flex items-center justify-center gap-1.5"
-                    >
-                      {bookedMeetingLink}
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
+              <div className="flex flex-col flex-1 overflow-hidden">
+                {/* Scrollable Success Body */}
+                <div className="p-5 sm:p-7 overflow-y-auto flex-1 text-center space-y-4 no-scrollbar">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400 shadow-xl mt-2">
+                    <CheckCircle2 className="w-8 h-8 sm:w-9 sm:h-9" />
                   </div>
-                )}
 
-                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <div>
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-slate-100">Mentorship Session Reserved!</h3>
+                    <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed mt-1.5">
+                      Your session request for <strong>"{topic}"</strong> with <strong>{mentor.name}</strong> on{" "}
+                      <strong>{new Date(selectedSlot!.startTimeISO).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</strong> at <strong>{selectedSlot!.start}</strong> has been submitted.
+                    </p>
+                  </div>
+
+                  {/* Session Meeting Card */}
+                  {bookedMeetingLink && (
+                    <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-2 max-w-md mx-auto">
+                      <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider block">
+                        Dedicated Video Room Link
+                      </span>
+                      <a
+                        href={bookedMeetingLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono text-emerald-300 font-bold hover:underline flex items-center justify-center gap-1.5 break-all"
+                      >
+                        {bookedMeetingLink}
+                        <ExternalLink className="w-3.5 h-3.5 shrink-0" />
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+                {/* Permanent Fixed Action Footer for Success View */}
+                <div className="p-4 sm:px-6 bg-slate-950/95 border-t border-emerald-500/20 flex flex-col sm:flex-row items-center justify-center gap-3 shrink-0 z-10 glow-green-sm">
                   <Link
                     href="/dashboard/learner"
-                    className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 transition-all"
+                    className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-md shadow-emerald-500/20 transition-all w-full sm:w-auto text-center"
                   >
                     View in Learner Dashboard
                   </Link>
@@ -195,7 +199,7 @@ export function BookingModal({ mentor, onSuccess }: BookingModalProps) {
                       setSuccess(false);
                       setError(null);
                     }}
-                    className="px-6 py-3 rounded-xl bg-slate-900 text-slate-300 hover:text-slate-100 font-bold text-xs border border-emerald-500/20"
+                    className="px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-slate-100 font-extrabold text-xs border border-emerald-500/20 w-full sm:w-auto transition-all"
                   >
                     Done
                   </button>
@@ -204,9 +208,9 @@ export function BookingModal({ mentor, onSuccess }: BookingModalProps) {
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
                 {/* Scrollable Form Fields */}
-                <div className="p-5 sm:p-7 overflow-y-auto space-y-5 flex-1">
+                <div className="p-4 sm:p-6 overflow-y-auto space-y-4 flex-1 no-scrollbar">
                   {error && (
-                    <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-start gap-2">
+                    <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-start gap-2">
                       <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                       <span>{error}</span>
                     </div>
@@ -270,7 +274,7 @@ export function BookingModal({ mentor, onSuccess }: BookingModalProps) {
 
                   {/* Live Booking Confirmation Summary */}
                   {selectedSlot && (
-                    <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-2 animate-in fade-in">
+                    <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-2 animate-in fade-in">
                       <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider flex items-center gap-1">
                         <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
                         Session Reservation Summary
@@ -290,7 +294,7 @@ export function BookingModal({ mentor, onSuccess }: BookingModalProps) {
                     </div>
                   )}
 
-                  <div className="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/15 text-[11px] text-slate-400 flex items-center gap-2">
+                  <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15 text-[11px] text-slate-400 flex items-center gap-2">
                     <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                     <span>
                       SkillBridge guarantees zero double-bookings through strict transactional database locks.
@@ -298,8 +302,8 @@ export function BookingModal({ mentor, onSuccess }: BookingModalProps) {
                   </div>
                 </div>
 
-                {/* ALWAYS VISIBLE STICKY FOOTER BAR WITH CONFIRM BOOKING ACTION */}
-                <div className="p-4 sm:px-7 bg-slate-950/90 border-t border-emerald-500/20 flex items-center justify-between gap-4 shrink-0 glow-green-sm">
+                {/* Permanent Fixed Action Footer Bar for Form View */}
+                <div className="p-4 sm:px-6 bg-slate-950/95 border-t border-emerald-500/20 flex items-center justify-between gap-3 shrink-0 z-10 glow-green-sm">
                   <div className="hidden sm:block text-xs text-slate-400">
                     {selectedSlot ? (
                       <span>
@@ -314,7 +318,7 @@ export function BookingModal({ mentor, onSuccess }: BookingModalProps) {
                     <button
                       type="button"
                       onClick={() => setOpen(false)}
-                      className="px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-slate-200 transition-colors"
+                      className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-200 transition-colors"
                     >
                       Cancel
                     </button>
@@ -322,7 +326,7 @@ export function BookingModal({ mentor, onSuccess }: BookingModalProps) {
                     <button
                       type="submit"
                       disabled={loading || !selectedSlot}
-                      className="px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 disabled:opacity-50 transition-all w-full sm:w-auto scale-105"
+                      className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 disabled:opacity-50 transition-all w-full sm:w-auto"
                     >
                       {loading ? "Confirming Session..." : "Confirm & Book Session Now"}
                       <Send className="w-4 h-4" />
