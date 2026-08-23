@@ -34,7 +34,7 @@ export function BookingModal({ mentor, onSuccess }: BookingModalProps) {
     start: string;
     end: string;
   } | null>(null);
-  const [topic, setTopic] = useState("");
+  const [topic, setTopic] = useState("Architecture & System Design Review");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +46,7 @@ export function BookingModal({ mentor, onSuccess }: BookingModalProps) {
     setError(null);
 
     if (!selectedSlot) {
-      setError("Please select an available time slot.");
+      setError("Please select an available time slot above.");
       return;
     }
 
@@ -117,8 +117,8 @@ export function BookingModal({ mentor, onSuccess }: BookingModalProps) {
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
           <div className="w-full max-w-2xl rounded-3xl glass-card border border-emerald-500/30 shadow-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in fade-in zoom-in-95">
             
-            {/* Fixed Sticky Header */}
-            <div className="p-5 sm:p-6 bg-slate-950/60 border-b border-emerald-500/15 flex items-center justify-between shrink-0">
+            {/* Fixed Header Bar */}
+            <div className="p-5 sm:p-6 bg-slate-950/70 border-b border-emerald-500/15 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3.5">
                 <img
                   src={mentor.avatar}
@@ -149,61 +149,62 @@ export function BookingModal({ mentor, onSuccess }: BookingModalProps) {
               </button>
             </div>
 
-            {/* Scrollable Modal Content Body */}
-            <div className="p-5 sm:p-7 overflow-y-auto space-y-5">
-              {success ? (
-                <div className="py-6 text-center space-y-5 glow-green">
-                  <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400 shadow-xl">
-                    <CheckCircle2 className="w-9 h-9" />
-                  </div>
-
-                  <div>
-                    <h3 className="text-2xl font-extrabold text-slate-100">Mentorship Session Reserved!</h3>
-                    <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed mt-1.5">
-                      Your session request for <strong>"{topic}"</strong> with <strong>{mentor.name}</strong> on{" "}
-                      <strong>{new Date(selectedSlot!.startTimeISO).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</strong> at <strong>{selectedSlot!.start}</strong> has been submitted.
-                    </p>
-                  </div>
-
-                  {/* Session Meeting Card */}
-                  {bookedMeetingLink && (
-                    <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-2 max-w-md mx-auto">
-                      <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider block">
-                        Dedicated Video Room Link
-                      </span>
-                      <a
-                        href={bookedMeetingLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-mono text-emerald-300 font-bold hover:underline flex items-center justify-center gap-1.5"
-                      >
-                        {bookedMeetingLink}
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                    </div>
-                  )}
-
-                  <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-                    <Link
-                      href="/dashboard/learner"
-                      className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 transition-all"
-                    >
-                      View in Learner Dashboard
-                    </Link>
-                    <button
-                      onClick={() => {
-                        setOpen(false);
-                        setSuccess(false);
-                        setError(null);
-                      }}
-                      className="px-5 py-2.5 rounded-xl bg-slate-900 text-slate-300 hover:text-slate-100 font-bold text-xs border border-emerald-500/20"
-                    >
-                      Close Window
-                    </button>
-                  </div>
+            {/* Modal Body & Form */}
+            {success ? (
+              <div className="p-6 sm:p-8 overflow-y-auto py-8 text-center space-y-5 glow-green">
+                <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400 shadow-xl">
+                  <CheckCircle2 className="w-9 h-9" />
                 </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-5">
+
+                <div>
+                  <h3 className="text-2xl font-extrabold text-slate-100">Mentorship Session Reserved!</h3>
+                  <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed mt-1.5">
+                    Your session request for <strong>"{topic}"</strong> with <strong>{mentor.name}</strong> on{" "}
+                    <strong>{new Date(selectedSlot!.startTimeISO).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}</strong> at <strong>{selectedSlot!.start}</strong> has been submitted.
+                  </p>
+                </div>
+
+                {/* Session Meeting Card */}
+                {bookedMeetingLink && (
+                  <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-2 max-w-md mx-auto">
+                    <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider block">
+                      Dedicated Video Room Link
+                    </span>
+                    <a
+                      href={bookedMeetingLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-emerald-300 font-bold hover:underline flex items-center justify-center gap-1.5"
+                    >
+                      {bookedMeetingLink}
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                )}
+
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <Link
+                    href="/dashboard/learner"
+                    className="px-6 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md shadow-emerald-500/20 transition-all"
+                  >
+                    View in Learner Dashboard
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setOpen(false);
+                      setSuccess(false);
+                      setError(null);
+                    }}
+                    className="px-6 py-3 rounded-xl bg-slate-900 text-slate-300 hover:text-slate-100 font-bold text-xs border border-emerald-500/20"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+                {/* Scrollable Form Fields */}
+                <div className="p-5 sm:p-7 overflow-y-auto space-y-5 flex-1">
                   {error && (
                     <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-start gap-2">
                       <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -295,27 +296,41 @@ export function BookingModal({ mentor, onSuccess }: BookingModalProps) {
                       SkillBridge guarantees zero double-bookings through strict transactional database locks.
                     </span>
                   </div>
+                </div>
 
-                  <div className="pt-3 flex items-center justify-end gap-3 border-t border-emerald-500/10">
+                {/* ALWAYS VISIBLE STICKY FOOTER BAR WITH CONFIRM BOOKING ACTION */}
+                <div className="p-4 sm:px-7 bg-slate-950/90 border-t border-emerald-500/20 flex items-center justify-between gap-4 shrink-0 glow-green-sm">
+                  <div className="hidden sm:block text-xs text-slate-400">
+                    {selectedSlot ? (
+                      <span>
+                        Selected: <strong className="text-emerald-400">{selectedSlot.start} - {selectedSlot.end}</strong>
+                      </span>
+                    ) : (
+                      <span className="text-amber-400">Please select an available slot</span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3 ml-auto w-full sm:w-auto justify-end">
                     <button
                       type="button"
                       onClick={() => setOpen(false)}
-                      className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-200 transition-colors"
+                      className="px-4 py-2.5 text-xs font-bold text-slate-400 hover:text-slate-200 transition-colors"
                     >
                       Cancel
                     </button>
+
                     <button
                       type="submit"
                       disabled={loading || !selectedSlot}
-                      className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 disabled:opacity-50 transition-all"
+                      className="px-6 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2 disabled:opacity-50 transition-all w-full sm:w-auto scale-105"
                     >
-                      {loading ? "Confirming Slot..." : "Confirm & Reserve Session"}
+                      {loading ? "Confirming Session..." : "Confirm & Book Session Now"}
                       <Send className="w-4 h-4" />
                     </button>
                   </div>
-                </form>
-              )}
-            </div>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

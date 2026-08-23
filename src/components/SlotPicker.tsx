@@ -57,6 +57,16 @@ export function SlotPicker({ mentorId, onSlotSelected, selectedSlotISO }: SlotPi
       const data = await res.json();
       if (res.ok && data.success) {
         setSlots(data.slots);
+        // Auto-select first available slot if none currently selected
+        const firstAvailable = data.slots.find((s: SlotItem) => s.available);
+        if (firstAvailable) {
+          onSlotSelected({
+            startTimeISO: firstAvailable.startTimeISO,
+            endTimeISO: firstAvailable.endTimeISO,
+            start: firstAvailable.start,
+            end: firstAvailable.end,
+          });
+        }
       } else {
         setError(data.message || "Failed to load slots");
       }
