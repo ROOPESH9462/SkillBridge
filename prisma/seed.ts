@@ -1,7 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
+const connectionUrl = process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL;
+const prisma = connectionUrl
+  ? new PrismaClient({ datasources: { db: { url: connectionUrl } } })
+  : new PrismaClient();
 
 const Role = {
   LEARNER: "LEARNER",
@@ -51,24 +54,28 @@ const NotificationType = {
 };
 
 async function main() {
-  console.log("🌱 Cleaning database...");
-  await prisma.review.deleteMany();
-  await prisma.notification.deleteMany();
-  await prisma.mentorshipSession.deleteMany();
-  await prisma.mentorAvailability.deleteMany();
-  await prisma.skillMilestone.deleteMany();
-  await prisma.learnerSkillGoal.deleteMany();
-  await prisma.userSkill.deleteMany();
-  await prisma.mentorApplication.deleteMany();
-  await prisma.mentorProfile.deleteMany();
-  await prisma.skill.deleteMany();
-  await prisma.user.deleteMany();
+  if (process.env.RESET_DB === "true") {
+    console.log("🌱 Resetting database (RESET_DB=true)...");
+    await prisma.review.deleteMany();
+    await prisma.notification.deleteMany();
+    await prisma.mentorshipSession.deleteMany();
+    await prisma.mentorAvailability.deleteMany();
+    await prisma.skillMilestone.deleteMany();
+    await prisma.learnerSkillGoal.deleteMany();
+    await prisma.userSkill.deleteMany();
+    await prisma.mentorApplication.deleteMany();
+    await prisma.mentorProfile.deleteMany();
+    await prisma.skill.deleteMany();
+    await prisma.user.deleteMany();
+  } else {
+    console.log("🌱 Checking database state (preserving all existing users and sessions)...");
+  }
 
   console.log("🔐 Hashing default passwords...");
   const hashedPassword = await bcrypt.hash("password123", 10);
 
   // 1. Create Real-World Skills Taxonomy
-  console.log("📚 Creating skills taxonomy...");
+  console.log("📚 Upserting skills taxonomy...");
   const skillsData = [
     { name: "Next.js", category: "Software Engineering", description: "React Framework for Web Development with App Router & SSR" },
     { name: "React", category: "Software Engineering", description: "UI Component Library for Building Modern Web Interfaces" },
@@ -100,7 +107,7 @@ async function main() {
   }
 
   // 2. Create Core Admin, Learner, and Test Mentor Accounts
-  console.log("👤 Creating Core System Accounts...");
+  console.log("👤 Upserting Core System Accounts...");
   const adminUser = await prisma.user.upsert({
     where: { email: "admin@skillbridge.dev" },
     update: {},
@@ -140,47 +147,43 @@ async function main() {
     },
   });
 
-  // Create Learner Active Goals & Real-World Milestone Roadmaps
+  // Learner Active Goals & Milestones
   const nextjsId = skillMap.get("Next.js")!;
   const systemDesignId = skillMap.get("System Design")!;
-  const pythonId = skillMap.get("Python")!;
 
-  const nextGoal = await prisma.learnerSkillGoal.create({
-    data: {
+  const nextGoal = await prisma.learnerSkillGoal.upsert({
+    where: {
+      userId_skillId: {
+        userId: learnerUser.id,
+        skillId: nextjsId,
+      },
+    },
+    update: {},
+    create: {
       userId: learnerUser.id,
       skillId: nextjsId,
       targetLevel: SkillProficiency.EXPERT,
     },
   });
 
-  await prisma.skillMilestone.createMany({
-    data: [
-      { goalId: nextGoal.id, title: "App Router & Dynamic Server Routing", isCompleted: true },
-      { goalId: nextGoal.id, title: "React Server Components & Suspense Streaming", isCompleted: true },
-      { goalId: nextGoal.id, title: "Server Actions & Zod Form Validation", isCompleted: true },
-      { goalId: nextGoal.id, title: "Stale-While-Revalidate & ISR Caching Strategies", isCompleted: false },
-      { goalId: nextGoal.id, title: "Production Deployment & Performance Monitoring", isCompleted: false },
-    ],
+  const existingMilestones = await prisma.skillMilestone.findMany({
+    where: { goalId: nextGoal.id },
   });
 
-  const sysGoal = await prisma.learnerSkillGoal.create({
-    data: {
-      userId: learnerUser.id,
-      skillId: systemDesignId,
-      targetLevel: SkillProficiency.EXPERT,
-    },
-  });
-
-  await prisma.skillMilestone.createMany({
-    data: [
-      { goalId: sysGoal.id, title: "Load Balancers & Nginx Reverse Proxies", isCompleted: true },
-      { goalId: sysGoal.id, title: "Database Sharding, Indexes & Read Replicas", isCompleted: false },
-      { goalId: sysGoal.id, title: "Distributed Caching (Redis Cluster)", isCompleted: false },
-    ],
-  });
+  if (existingMilestones.length === 0) {
+    await prisma.skillMilestone.createMany({
+      data: [
+        { goalId: nextGoal.id, title: "App Router & Dynamic Server Routing", isCompleted: true },
+        { goalId: nextGoal.id, title: "React Server Components & Suspense Streaming", isCompleted: true },
+        { goalId: nextGoal.id, title: "Server Actions & Zod Form Validation", isCompleted: true },
+        { goalId: nextGoal.id, title: "Stale-While-Revalidate & ISR Caching Strategies", isCompleted: false },
+        { goalId: nextGoal.id, title: "Production Deployment & Performance Monitoring", isCompleted: false },
+      ],
+    });
+  }
 
   // 3. Create Authentic Fictional Industry Mentors
-  console.log("👨‍🏫 Creating 8 Authentic Industry Mentors...");
+  console.log("👨‍🏫 Upserting Industry Mentors...");
   const mentors = [
     {
       userId: testMentorUser.id,
@@ -310,55 +313,66 @@ async function main() {
   ];
 
   for (const m of mentors) {
-    let user;
-    if (m.userId) {
-      user = await prisma.user.findUnique({ where: { id: m.userId } });
-    } else {
-      user = await prisma.user.create({
-        data: {
-          email: m.email,
-          name: m.name,
-          passwordHash: hashedPassword,
-          role: Role.MENTOR,
-          accountStatus: AccountStatus.ACTIVE,
-          avatar: m.avatar,
-        },
-      });
-    }
+    const user = await prisma.user.upsert({
+      where: { email: m.email },
+      update: {},
+      create: {
+        email: m.email,
+        name: m.name,
+        passwordHash: hashedPassword,
+        role: Role.MENTOR,
+        accountStatus: AccountStatus.ACTIVE,
+        avatar: m.avatar,
+      },
+    });
 
-    if (user) {
-      await prisma.mentorProfile.create({
-        data: {
-          userId: user.id,
-          professionalTitle: m.title,
-          yearsExperience: m.yearsExp,
-          bio: m.bio,
-          githubUrl: m.github,
-          linkedinUrl: m.linkedin,
-          overallRating: m.rating,
-          reviewCount: m.reviewCount,
-          verificationStatus: VerificationStatus.VERIFIED,
-          verificationDate: new Date(),
-        },
-      });
+    await prisma.mentorProfile.upsert({
+      where: { userId: user.id },
+      update: {},
+      create: {
+        userId: user.id,
+        professionalTitle: m.title,
+        yearsExperience: m.yearsExp,
+        bio: m.bio,
+        githubUrl: m.github,
+        linkedinUrl: m.linkedin,
+        overallRating: m.rating,
+        reviewCount: m.reviewCount,
+        verificationStatus: VerificationStatus.VERIFIED,
+        verificationDate: new Date(),
+      },
+    });
 
-      for (const sk of m.skills) {
-        const sId = skillMap.get(sk.name);
-        if (sId) {
-          await prisma.userSkill.create({
-            data: {
+    for (const sk of m.skills) {
+      const sId = skillMap.get(sk.name);
+      if (sId) {
+        await prisma.userSkill.upsert({
+          where: {
+            userId_skillId_role: {
               userId: user.id,
               skillId: sId,
               role: SkillRole.TEACHING,
-              proficiency: sk.prof,
-              yearsExperience: sk.yrs,
-              isVerified: true,
             },
-          });
-        }
+          },
+          update: {},
+          create: {
+            userId: user.id,
+            skillId: sId,
+            role: SkillRole.TEACHING,
+            proficiency: sk.prof,
+            yearsExperience: sk.yrs,
+            isVerified: true,
+          },
+        });
       }
+    }
 
-      // Weekly Recurring Availability Slots (Mon, Wed, Fri)
+    // Weekly Recurring Availability Slots (Mon, Wed, Fri)
+    const existingAvail = await prisma.mentorAvailability.findFirst({
+      where: { mentorId: user.id },
+    });
+
+    if (!existingAvail) {
       for (const day of [1, 3, 5]) {
         await prisma.mentorAvailability.create({
           data: {
@@ -370,51 +384,15 @@ async function main() {
           },
         });
       }
-
-      // Completed Session & Verified Review for Aarav Mehta
-      if (m.name === "Aarav Mehta") {
-        const session = await prisma.mentorshipSession.create({
-          data: {
-            mentorId: user.id,
-            learnerId: learnerUser.id,
-            skillId: nextjsId,
-            scheduledStart: new Date(Date.now() - 86400000 * 2), // 2 days ago
-            scheduledEnd: new Date(Date.now() - 86400000 * 2 + 2700000), // +45 mins
-            durationMinutes: 45,
-            status: BookingStatus.COMPLETED,
-            topic: "Next.js App Router Caching & Revalidation Deep Dive",
-            notes: "Covered stale-while-revalidate patterns, Server Actions error boundaries, and ISR revalidation triggers.",
-            meetingLink: "https://meet.skillbridge.dev/session-aarav-siddharth",
-          },
-        });
-
-        await prisma.review.create({
-          data: {
-            sessionId: session.id,
-            authorId: learnerUser.id,
-            targetUserId: user.id,
-            rating: 5,
-            comment: "Aarav provided unmatched clarity on React Server Components caching! The architectural diagram we built cleared up weeks of confusion.",
-          },
-        });
-
-        await prisma.notification.create({
-          data: {
-            userId: learnerUser.id,
-            title: "Session Completed & Verified",
-            message: "Your mentorship session with Aarav Mehta has been completed. Verified review published!",
-            type: NotificationType.SESSION_COMPLETED,
-            isRead: true,
-          },
-        });
-      }
     }
   }
 
-  // 4. Create a Pending Application for Admin Demo Table
-  console.log("📝 Creating Pending Application for Admin Review...");
-  const applicantUser = await prisma.user.create({
-    data: {
+  // 4. Create Pending Application for Admin Review Demo
+  console.log("📝 Upserting Demo Pending Application...");
+  const applicantUser = await prisma.user.upsert({
+    where: { email: "applicant@skillbridge.dev" },
+    update: {},
+    create: {
       email: "applicant@skillbridge.dev",
       name: "Neha Sharma",
       passwordHash: hashedPassword,
@@ -424,21 +402,27 @@ async function main() {
     },
   });
 
-  await prisma.mentorApplication.create({
-    data: {
-      userId: applicantUser.id,
-      professionalTitle: "Lead AI Systems Engineer",
-      yearsExperience: 6,
-      skills: "Python, FastAPI, PyTorch, System Design",
-      bio: "Building enterprise generative AI search pipelines and model evaluation suites. Excited to mentor junior AI engineers.",
-      portfolioUrl: "https://github.com/nehasharma-ai",
-      linkedinUrl: "https://linkedin.com/in/nehasharma-ai",
-      reasonForMentoring: "I want to help upcoming engineers avoid common pitfalls when deploying machine learning models to production.",
-      status: VerificationStatus.PENDING,
-    },
+  const existingApp = await prisma.mentorApplication.findFirst({
+    where: { userId: applicantUser.id },
   });
 
-  console.log("✅ Real-time authentic database populated successfully!");
+  if (!existingApp) {
+    await prisma.mentorApplication.create({
+      data: {
+        userId: applicantUser.id,
+        professionalTitle: "Lead AI Systems Engineer",
+        yearsExperience: 6,
+        skills: "Python, FastAPI, PyTorch, System Design",
+        bio: "Building enterprise generative AI search pipelines and model evaluation suites. Excited to mentor junior AI engineers.",
+        portfolioUrl: "https://github.com/nehasharma-ai",
+        linkedinUrl: "https://linkedin.com/in/nehasharma-ai",
+        reasonForMentoring: "I want to help upcoming engineers avoid common pitfalls when deploying machine learning models to production.",
+        status: VerificationStatus.PENDING,
+      },
+    });
+  }
+
+  console.log("✅ Database verified and populated without overwriting user data!");
 }
 
 main()
