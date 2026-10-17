@@ -2,19 +2,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { ShieldCheck, Mail, Lock, AlertCircle, ArrowRight, Sparkles, KeyRound } from "lucide-react";
+import { ShieldCheck, Mail, Lock, AlertCircle, ArrowRight, Sparkles } from "lucide-react";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  const fillAdminDemo = () => {
-    setEmail("admin@skillbridge.dev");
-    setPassword("password123");
-    setError(null);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,18 +68,6 @@ export default function AdminLoginPage() {
           <div className="py-2 text-center rounded-lg bg-emerald-500 text-slate-950 font-extrabold shadow-sm">
             Admin Portal
           </div>
-        </div>
-
-        {/* 1-Click Demo Admin Login */}
-        <div>
-          <button
-            type="button"
-            onClick={fillAdminDemo}
-            className="w-full p-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center justify-center gap-2 transition-all"
-          >
-            <KeyRound className="w-4 h-4 text-emerald-400" />
-            ⚡ 1-Click Fill Demo Admin Credentials
-          </button>
         </div>
 
         {error && (
