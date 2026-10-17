@@ -36,26 +36,39 @@ export async function getSessionUser(): Promise<JWTPayload | null> {
   const payload = verifyJWT(token);
   if (!payload) return null;
 
-  // Always synchronize latest role and status from database so Admin approvals take effect in real-time
   try {
-    const latestUser = await db.user.findUnique({
+    // 1. Try finding by ID
+    let latestUser = await db.user.findUnique({
       where: { id: payload.userId },
-      select: { role: true, accountStatus: true, name: true, avatar: true },
+      select: { id: true, email: true, role: true, accountStatus: true, name: true, avatar: true },
     });
+
+    // 2. Fallback: if database was reseeded, heal using email
+    if (!latestUser && payload.email) {
+      latestUser = await db.user.findUnique({
+        where: { email: payload.email },
+        select: { id: true, email: true, role: true, accountStatus: true, name: true, avatar: true },
+      });
+    }
+
+    // 3. If user exists, return synchronized payload with current database ID
     if (latestUser) {
       return {
         ...payload,
+        userId: latestUser.id,
+        email: latestUser.email,
         name: latestUser.name,
         role: latestUser.role,
         accountStatus: latestUser.accountStatus,
         avatar: latestUser.avatar,
       };
     }
-  } catch (e) {
-    // fallback to JWT payload
-  }
 
-  return payload;
+    // 4. User does not exist in database (stale session cookie)
+    return null;
+  } catch (e) {
+    return null;
+  }
 }
 
 export async function requireAuth(): Promise<JWTPayload> {

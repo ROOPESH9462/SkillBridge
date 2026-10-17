@@ -108,6 +108,9 @@ export function BookingModal({ mentor, onSuccess }: BookingModalProps) {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
+        if (res.status === 401 || data.message?.includes("UNAUTHORIZED") || data.message?.includes("expired") || data.message?.includes("sign in")) {
+          throw new Error("Your login session has expired. Please sign out and sign in to book your session.");
+        }
         throw new Error(data.message || "Failed to book mentorship session");
       }
 

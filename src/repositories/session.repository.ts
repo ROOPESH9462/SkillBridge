@@ -59,7 +59,7 @@ export class SessionRepository {
   }) {
     return db.$transaction(async (tx) => {
       // 1. Verify mentor account status
-      const mentor = await tx.user.findFirst({
+      let mentor = await tx.user.findFirst({
         where: {
           id: data.mentorId,
           role: "MENTOR",
@@ -69,6 +69,18 @@ export class SessionRepository {
       });
 
       if (!mentor) {
+        // Fallback: check if mentorProfile.id was passed
+        const profile = await tx.mentorProfile.findUnique({
+          where: { id: data.mentorId },
+          include: { user: true },
+        });
+        if (profile?.user && profile.user.role === "MENTOR" && profile.user.accountStatus === "ACTIVE") {
+          mentor = profile.user as any;
+          data.mentorId = profile.userId;
+        }
+      }
+
+      if (!mentor) {
         throw new Error("Mentor account is inactive or not found.");
       }
 
@@ -76,19 +88,39 @@ export class SessionRepository {
         throw new Error("Mentor verification was rejected by admin.");
       }
 
+      // 1b. Verify learner account status
+      const learner = await tx.user.findFirst({
+        where: {
+          id: data.learnerId,
+          accountStatus: "ACTIVE",
+        },
+      });
+
+      if (!learner) {
+        throw new Error("Learner account not found or session has expired. Please sign out and sign in again.");
+      }
+
       // 2. Ensure target Skill exists in database taxonomy
+      const cleanSkillQuery = data.skillId
+        .replace(/\s*\((?:EXPERT|INTERMEDIATE|BEGINNER)\)\s*$/i, "")
+        .trim();
+
       let targetSkill = await tx.skill.findFirst({
         where: {
-          OR: [{ id: data.skillId }, { name: { equals: data.skillId } }],
+          OR: [
+            { id: data.skillId },
+            { name: { equals: cleanSkillQuery } },
+            { name: { equals: data.skillId } },
+          ],
         },
       });
 
       if (!targetSkill) {
         targetSkill = await tx.skill.create({
           data: {
-            name: data.skillId,
+            name: cleanSkillQuery,
             category: "Software Engineering",
-            description: `Mentorship skill domain: ${data.skillId}`,
+            description: `Mentorship skill domain: ${cleanSkillQuery}`,
           },
         });
       }
