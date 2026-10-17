@@ -51,11 +51,10 @@ export function RegisterForm() {
         throw new Error(data.message || "Registration failed");
       }
 
-      router.push("/dashboard");
-      router.refresh();
+      // Hard redirect to ensure cookies are read by Server Components
+      window.location.href = "/dashboard";
     } catch (err: any) {
       setError(err.message || "Registration failed");
-    } finally {
       setLoading(false);
     }
   };
