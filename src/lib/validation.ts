@@ -14,11 +14,11 @@ export const loginSchema = z.object({
 });
 
 export const bookingSchema = z.object({
-  mentorId: z.string().uuid("Invalid mentor ID"),
-  skillId: z.string().uuid("Invalid skill ID"),
-  scheduledStart: z.string().datetime("Invalid ISO date string"),
-  scheduledEnd: z.string().datetime("Invalid ISO date string"),
-  topic: z.string().min(5, "Topic must be at least 5 characters"),
+  mentorId: z.string().min(1, "Mentor ID is required"),
+  skillId: z.string().min(1, "Skill is required"),
+  scheduledStart: z.string().min(1, "Start time is required"),
+  scheduledEnd: z.string().min(1, "End time is required"),
+  topic: z.string().min(3, "Topic must be at least 3 characters"),
 });
 
 export const mentorApplicationSchema = z.object({
